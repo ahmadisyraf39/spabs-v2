@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: spabs --default;
+}
+
+/* SPABS brand theme — greens carried over from the old spabs project
+   (#148634 primary / #165227 hover-secondary), rebuilt as DaisyUI tokens
+   with modernized neutrals/shadows instead of the old flat gray + heavy
+   drop-shadow look. */
+@plugin "daisyui/theme" {
+  name: "spabs";
+  default: true;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f3f4f6;
+  --color-base-300: #e5e7eb;
+  --color-base-content: #1f2937;
+  --color-primary: #148634;
+  --color-primary-content: #ffffff;
+  --color-secondary: #165227;
+  --color-secondary-content: #ffffff;
+  --color-accent: #1cc74c;
+  --color-accent-content: #073815;
+  --color-neutral: #1f2937;
+  --color-neutral-content: #f9fafb;
+  --color-info: #3b82f6;
+  --color-info-content: #ffffff;
+  --color-success: #22c55e;
+  --color-success-content: #052e12;
+  --color-warning: #f59e0b;
+  --color-warning-content: #451a03;
+  --color-error: #ef4444;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+
+body {
+  font-family: "Poppins", sans-serif;
+}

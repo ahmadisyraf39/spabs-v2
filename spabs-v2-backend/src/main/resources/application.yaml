@@ -1,0 +1,77 @@
+spring:
+  config:
+    # Loads automatically if present on the classpath, no profile activation needed.
+    # Never commit this file — see application-local.yaml (gitignored) for local secrets.
+    import: "optional:classpath:application-local.yaml"
+  application:
+    name: spabs-v2
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/spabs_v2}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  # Password goes in application-local.yaml (gitignored) — see the TODO there.
+  #
+  # Explicit timeouts matter here: JavaMailSender has none by default, so a stalled SMTP
+  # connection (an expired Ethereal test session, a network hiccup) blocks the calling
+  # request indefinitely instead of failing fast into EmailService's catch-and-log.
+  #
+  # localhost is set explicitly for a different reason: without it, SMTPTransport does a
+  # *reverse DNS lookup of this machine's own IP* to build the EHLO hostname, before it even
+  # opens a connection — on a network whose resolver can't answer PTR queries, that lookup
+  # hangs indefinitely and isn't covered by the timeouts above at all. Found via a thread
+  # dump of a full-seed run stuck for 10+ minutes on the very first welcome email, blocked in
+  # SMTPTransport.getLocalHost(), not in any actual socket I/O to the mail server.
+  #
+  # usecanonicalhostname covers a second, independent reverse-DNS call: MimeMessage generates
+  # its own Message-ID header via InternetAddress.getLocalHostName(), which does the same kind
+  # of lookup regardless of the smtp.localhost setting above. Found via a second thread dump,
+  # same symptom, different call site. false makes it use the local hostname/IP directly
+  # instead of resolving it.
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    properties:
+      mail:
+        mime:
+          address:
+            usecanonicalhostname: false
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          localhost: "localhost"
+
+# TODO: move jwt.secret out of source control (env var) before any real deployment.
+jwt:
+  secret: "c3BhYnMtdjItZGV2LW9ubHktc2VjcmV0LWRvLW5vdC11c2UtaW4tcHJvZHVjdGlvbi1jaGFuZ2UtbWU="
+  expiration-ms: 86400000
+
+# One-time bootstrap account, created on startup if no SUPER_ADMIN exists yet.
+# TODO: override via env vars and change the password before any real deployment.
+app:
+  seed:
+    super-admin:
+      email: "superadmin@spabs.example"
+      password: "ChangeMe123!"
+    # Off by default — never runs unintentionally (incl. any real deployment). Enable with
+    # --app.seed.sample-data.enabled=true for a local run to get a full sample dataset for
+    # frontend development. Safe to leave enabled across restarts; no-ops once data exists.
+    sample-data:
+      enabled: false
+  attendance:
+    edit-window-days: 3
+  mail:
+    from: "noreply@spabs.example"
+  password-reset:
+    token-expiry-minutes: 30
+  frontend:
+    # TODO: update once the frontend exists — used to build the link in reset-password emails.
+    base-url: "http://localhost:5173"

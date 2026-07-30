@@ -1,0 +1,3 @@
+export const GENDERS = ['MALE', 'FEMALE']
+
+export const PARENT_RELATIONSHIPS = ['MOTHER', 'FATHER', 'GUARDIAN', 'OTHER']

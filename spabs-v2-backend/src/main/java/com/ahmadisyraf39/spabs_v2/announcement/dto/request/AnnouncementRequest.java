@@ -1,0 +1,24 @@
+package com.ahmadisyraf39.spabs_v2.announcement.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AnnouncementRequest {
+
+    private Long teamId;
+
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String content;
+}

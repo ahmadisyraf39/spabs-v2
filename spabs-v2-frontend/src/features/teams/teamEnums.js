@@ -1,0 +1,7 @@
+export const TEAM_CATEGORIES = ['BOYS', 'GIRLS']
+
+export const PLAYER_TEAM_STATUSES = ['ACTIVE', 'INACTIVE']
+
+export const COACH_TEAM_ROLES = ['HEAD_COACH', 'ASSISTANT_COACH']
+
+export const COACH_TEAM_STATUSES = ['ACTIVE', 'INACTIVE']

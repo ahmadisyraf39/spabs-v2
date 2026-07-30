@@ -1,0 +1,55 @@
+# --- Backend (spabs-v2-backend) ---
+spabs-v2-backend/HELP.md
+spabs-v2-backend/target/
+!spabs-v2-backend/**/src/main/**/target/
+!spabs-v2-backend/**/src/test/**/target/
+/spabs-v1/
+/fams/
+spabs-v2-backend/application-local.yaml
+spabs-v2-backend/src/main/resources/application-local.yaml
+spabs-v2-backend/.mvn/wrapper/maven-wrapper.jar
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+build/
+!spabs-v2-backend/**/src/main/**/build/
+!spabs-v2-backend/**/src/test/**/build/
+*.iws
+*.iml
+*.ipr
+
+# --- Frontend (spabs-v2-frontend) ---
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+node_modules
+dist
+dist-ssr
+*.local
+.env
+
+# Kept on disk locally, intentionally never tracked
+spabs-v2-frontend/CLAUDE.md
+
+# --- Editor / OS (shared) ---
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
