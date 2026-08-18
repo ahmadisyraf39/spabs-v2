@@ -1,0 +1,127 @@
+# SPABS-V2
+
+Sports academy player & business management system — tracks players, teams, coaches, parents,
+training/matches, attendance, skill progress, fees, inventory, sponsorships, and finances for a
+youth sports academy. Two-part project: a Spring Boot REST API and a React SPA that consumes it.
+
+## Stack
+
+**Backend** (`spabs-v2-backend/`)
+- Java 25, Spring Boot 4.1.1
+- Spring Data JPA + PostgreSQL
+- Spring Security with JWT auth (`jjwt`)
+- MapStruct for entity/DTO mapping, Lombok
+- Spring Mail (welcome emails, password reset)
+
+**Frontend** (`spabs-v2-frontend/`)
+- React 19 + Vite 8, plain JavaScript (no TypeScript)
+- Tailwind CSS v4 + DaisyUI v5
+- React Router v7
+- Recharts (dashboard charts)
+
+## Features
+
+- Role-based access: `SUPER_ADMIN`, `ADMIN`, `COACH`, `PARENT`, each with their own dashboard and
+  (for Coach/Parent) a self-service portal scoped to their own teams/children
+- Player, team, and roster management (player↔team and coach↔team assignments with jersey
+  numbers/roles/status history)
+- Activities (training/matches/tournaments), including recurring-schedule generation, with
+  per-session attendance tracking
+- Skill/module curriculum and per-player progress tracking, scoped by age group + category
+- Fee catalog, fee assignment/payment tracking, and coach payroll
+- Inventory catalog with stock transactions (purchases, adjustments, damage/loss)
+- Sponsorships and a general finance transaction ledger, with admin dashboard charts (income vs.
+  expense trend, fee collection, attendance/progress by team)
+- Team/academy-wide announcements
+- JWT authentication with forced password change on first login, self-service password reset via
+  email, and a "My Profile" page for every role
+
+## Getting started
+
+### Backend
+
+Requires Java 25 and a PostgreSQL database.
+
+```bash
+cd spabs-v2-backend
+./mvnw spring-boot:run
+```
+
+Configuration (`src/main/resources/application.yaml`) reads these environment variables, all with
+local-friendly defaults except the DB password and mail username:
+
+| Variable | Default |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/spabs_v2` |
+| `DB_USERNAME` | `postgres` |
+| `DB_PASSWORD` | *(required)* |
+| `MAIL_HOST` | `smtp.gmail.com` |
+| `MAIL_PORT` | `587` |
+| `MAIL_USERNAME` | *(empty)* |
+
+A `SUPER_ADMIN` account (`superadmin@spabs.example` / `ChangeMe123!`) is seeded automatically on
+first startup.
+
+#### Sample data
+
+`SampleDataSeeder` (off by default) fills the database with a realistic, deterministic dataset for
+frontend development — enable it with `--app.seed.sample-data.enabled=true` (safe to leave on
+across restarts; it no-ops once data already exists). One run produces:
+
+- 6 teams across 3 age bands (Tigers U10/U12 Boys, Lions U14/U16 Boys, Eagles U12/U14 Girls), each
+  with a full roster, assigned coaches, and a weekly recurring training schedule
+- 18 months of history (from 6 Jan 2025 onward): training sessions, matches, attendance records,
+  skill/module progress, fee assignments and payments, coach payroll, inventory transactions,
+  sponsorships, and finance-ledger entries
+- Every seeded user account (coaches, parents, sample admins) uses the password `Password123`
+
+The API is served at `http://localhost:8080/api/v1`.
+
+### Frontend
+
+Requires Node.js.
+
+```bash
+cd spabs-v2-frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+`.env`'s `VITE_API_BASE_URL` should point at the running backend (defaults to
+`http://localhost:8080/api/v1`). The dev server runs at `http://localhost:5173`.
+
+## Project structure
+
+```
+spabs-v2-backend/
+  src/main/java/com/ahmadisyraf39/spabs_v2/
+    activity/       — activities (training/match/tournament) + recurring scheduling
+    announcement/    — academy-wide and team-scoped announcements
+    attendance/     — per-session attendance records
+    auth/           — login, JWT issuance, password reset
+    common/         — shared config, error handling, email, sample-data seeding
+    finance/        — fee items/records, coach payments, finance transaction ledger
+    inventory/      — inventory catalog + stock transactions
+    membership/     — player↔team and coach↔team roster/staff assignments
+    player/         — player records
+    progress/       — skills, modules, and per-player progress tracking
+    security/       — Spring Security / JWT configuration
+    sponsorship/    — sponsors and club sponsorships
+    team/           — team records
+    user/           — users and role-specific profiles (admin/coach/parent)
+spabs-v2-frontend/
+  src/
+    lib/            — API client + per-domain API wrappers, shared hooks/utils
+    features/       — one folder per domain (mirrors the backend modules above), plus
+                      coach-portal/ and parent-portal/ for role self-service
+    components/     — shared layout chrome and small reusable UI pieces
+    routes/         — route guards and per-role dashboard pages
+```
+
+## Known gaps
+
+- Several delete flows (e.g. deleting a Module with recorded progress, or a paid fee record) can
+  surface as raw unhandled errors rather than a clean validation message — see inline TODOs.
+- Config values that must change before any real deployment are marked `TODO` in
+  `application.yaml` (JWT secret, seeded super-admin password, mail sender address).
