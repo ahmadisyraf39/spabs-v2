@@ -4,11 +4,51 @@ Sports academy player & business management system — tracks players, teams, co
 training/matches, attendance, skill progress, fees, inventory, sponsorships, and finances for a
 youth sports academy. Two-part project: a Spring Boot REST API and a React SPA that consumes it.
 
+## Re-engineered from SPABS
+
+SPABS-V2 is a ground-up re-engineering of [SPABS](https://github.com/ahmadisyraf39/spabs), an
+earlier academic/legacy build of the same academy-management idea. Re-engineered a monolithic
+system into a decoupled architecture: a stateless Spring Boot REST API with role-based JWT
+authentication via Spring Security, and a React (Vite) frontend with a fetch-based API client.
+
+Redesigned the relational schema with Spring Data JPA/Hibernate to support multi-team history for
+players and coaches (replacing SPABS's single-team model, where each player/coach row carried one
+static `kategori` column with no history) and active/inactive membership status in place of hard
+deletes (SPABS issued a plain SQL `DELETE` on removal). Data access throughout uses Spring Data
+JPA repository interfaces with derived query methods rather than hand-written SQL.
+
+### What's new
+
+- A `SUPER_ADMIN` role on top of Admin/Coach/Parent
+- `Team` as a first-class entity, with `PlayerTeam`/`CoachTeam` join entities tracking full
+  roster and coaching-staff history (jersey numbers, roles, join/leave dates, status) instead of
+  a single category field per player/coach
+- Inventory management (equipment catalog + stock transactions)
+- Sponsorships (sponsor catalog + club sponsorship records)
+- A general finance transaction ledger, alongside fee records and coach payroll
+- Recurring-activity scheduling (generate a whole term's training sessions from one weekly rule)
+- Richer role dashboards with charts (attendance/progress trends, finance trend, fee collection)
+- Dedicated self-service portals for Coach and Parent roles, not just a shared dashboard
+- Forced password change on first login and self-service, email-based password reset
+
+### What's dropped
+
+A few SPABS features weren't carried over:
+
+- Photo/video gallery and albums
+- Online fee payment via Stripe checkout (SPABS-V2's "mark as paid" is admin-triggered, not a
+  parent-facing payment gateway)
+- Generated invoices
+- Parent-submitted absence/leave requests
+- Dedicated player-selection-for-activity screens (squad selection)
+- Tournament as its own managed entity — SPABS-V2 only has `TOURNAMENT` as one `Activity` type,
+  not a separate module
+
 ## Stack
 
 **Backend** (`spabs-v2-backend/`)
 - Java 25, Spring Boot 4.1.1
-- Spring Data JPA + PostgreSQL
+- Spring Data JPA + PostgreSQL, derived-method repository queries (no hand-written JPQL/SQL)
 - Spring Security with JWT auth (`jjwt`)
 - MapStruct for entity/DTO mapping, Lombok
 - Spring Mail (welcome emails, password reset)
@@ -17,6 +57,7 @@ youth sports academy. Two-part project: a Spring Boot REST API and a React SPA t
 - React 19 + Vite 8, plain JavaScript (no TypeScript)
 - Tailwind CSS v4 + DaisyUI v5
 - React Router v7
+- A thin `fetch`-based API client (no Axios)
 - Recharts (dashboard charts)
 
 ## Features
