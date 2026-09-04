@@ -44,6 +44,10 @@ A few SPABS features weren't carried over:
 - Tournament as its own managed entity — SPABS-V2 only has `TOURNAMENT` as one `Activity` type,
   not a separate module
 
+## Architecture
+
+![Architecture diagram](media/architecture-diagram.png)
+
 ## Stack
 
 **Backend** (`spabs-v2-backend/`)
@@ -76,6 +80,16 @@ A few SPABS features weren't carried over:
 - Team/academy-wide announcements
 - JWT authentication with forced password change on first login, self-service password reset via
   email, and a "My Profile" page for every role
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Login](media/login.PNG) Login | ![Admin dashboard](media/admin-dashboard.PNG) Admin dashboard |
+| ![Team details](media/team-details.PNG) Team details | ![Player details](media/player-details.PNG) Player details |
+| ![Player skill progress](media/player-skill-progress.PNG) Player skill progress | ![Player activity/attendance history](media/player-activity-history.PNG) Player activity/attendance history |
+| ![Inventory](media/inventory.PNG) Inventory | ![Sponsorship](media/sponsorship.PNG) Sponsorship |
+| ![Coach payroll](media/coach-payroll.PNG) Coach payroll | ![Finance ledger](media/ledger.PNG) Finance ledger |
 
 ## Getting started
 
