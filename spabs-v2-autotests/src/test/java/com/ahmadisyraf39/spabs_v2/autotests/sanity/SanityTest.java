@@ -1,4 +1,4 @@
-package sanity;
+package com.ahmadisyraf39.spabs_v2.autotests.sanity;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
