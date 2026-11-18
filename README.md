@@ -146,6 +146,9 @@ npm run dev
 `.env`'s `VITE_API_BASE_URL` should point at the running backend (defaults to
 `http://localhost:8080/api/v1`). The dev server runs at `http://localhost:5173`.
 
+### Automated tests
+See [spabs-v2-autotests/README.md](spabs-v2-autotests/README.md).
+
 ## Project structure
 
 ```
