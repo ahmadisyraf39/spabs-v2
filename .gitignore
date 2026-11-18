@@ -1,3 +1,5 @@
+target/
+
 # --- Backend (spabs-v2-backend) ---
 spabs-v2-backend/HELP.md
 spabs-v2-backend/target/
