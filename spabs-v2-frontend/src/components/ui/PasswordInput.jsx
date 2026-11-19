@@ -25,7 +25,7 @@ function EyeOffIcon() {
   )
 }
 
-export default function PasswordInput({ label, value, onChange, autoComplete, minLength, required }) {
+export default function PasswordInput({ label, value, onChange, autoComplete, minLength, required, testId }) {
   const [visible, setVisible] = useState(false)
 
   return (
@@ -40,6 +40,7 @@ export default function PasswordInput({ label, value, onChange, autoComplete, mi
           autoComplete={autoComplete}
           minLength={minLength}
           required={required}
+          data-testid={testId}
         />
         <button
           type="button"

@@ -37,7 +37,7 @@ export default function LoginPage() {
     <AuthLayout title="Log in" subtitle="Welcome back — enter your details to continue.">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error text-sm" data-testid="login-error">
             <span>{error}</span>
           </div>
         )}
@@ -51,6 +51,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             required
+            data-testid="login-email"
           />
         </label>
 
@@ -60,15 +61,16 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
+          testId="login-password"
         />
 
         <div className="text-center">
-          <Link to="/forgot-password" className="link link-primary text-sm">
+          <Link to="/forgot-password" className="link link-primary text-sm" data-testid="login-forgot-password">
             Forgot password?
           </Link>
         </div>
 
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <button type="submit" className="btn btn-primary" data-testid="login-submit" disabled={submitting}>
           {submitting ? <span className="loading loading-spinner loading-sm" /> : 'Log in'}
         </button>
       </form>
