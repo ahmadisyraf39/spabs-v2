@@ -9,7 +9,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface ActivityMapper {
+public
+interface ActivityMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
