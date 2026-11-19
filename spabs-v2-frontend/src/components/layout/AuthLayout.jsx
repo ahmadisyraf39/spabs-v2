@@ -21,7 +21,7 @@ export default function AuthLayout({ title, subtitle, children }) {
           <div className="mb-6 flex flex-col items-center gap-2 text-center">
             <img src={logo} alt="" className="h-50 w-50" />
           </div>
-          <h2 className="text-base-content text-2xl font-semibold">{title}</h2>
+          <h2 data-testid="auth-title" className="text-base-content text-2xl font-semibold">{title}</h2>
           {subtitle && <p className="text-base-content/60 mt-1 text-sm">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </div>

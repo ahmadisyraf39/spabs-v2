@@ -77,6 +77,26 @@ public class LoginUiTests {
                 "Should stay on /login after wrong credentials, but was: " + currentUrl);
     }
 
+    @Test
+    public void forgotPasswordLink_opensForgotPasswordPage() {
+
+        driver.get(BASE_URL + "/login");
+
+        WebElement link = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-forgot-password']")));
+        link.click();
+
+        String expectedPath = "/forgot-password";
+        wait.until(ExpectedConditions.urlContains(expectedPath));
+
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains(expectedPath),
+                "Should navigate to " + expectedPath + " when clicking the link, but was: " + currentUrl);
+
+        WebElement heading = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='auth-title']")));
+
+        Assert.assertEquals(heading.getText(), "Forgot password");
+    }
+
     @AfterMethod
     public void tearDown(){
         if(driver!= null){
