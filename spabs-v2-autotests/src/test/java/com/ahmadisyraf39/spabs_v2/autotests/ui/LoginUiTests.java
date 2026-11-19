@@ -1,8 +1,9 @@
 package com.ahmadisyraf39.spabs_v2.autotests.ui;
 
-import org.openqa.selenium.By;
+import com.ahmadisyraf39.spabs_v2.autotests.pages.ForgotPasswordPage;
+import com.ahmadisyraf39.spabs_v2.autotests.pages.LoginPage;
+
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,24 +14,25 @@ import java.time.Duration;
 
 public class LoginUiTests {
 
-    private static final String BASE_URL = "http://localhost:5173";
+    private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
+    private static final String CORRECT_PASSWORD = "Password123";
+    private static final String WRONG_PASSWORD = "WrongPassword123";
 
     private WebDriver driver;
     private WebDriverWait wait;
+    private LoginPage loginPage;
 
     @BeforeMethod
     public void setup() {
         driver = new ChromeDriver();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        loginPage = new LoginPage(driver, wait);
     }
 
     @Test
     public void loginPage_showsLoginForm() {
-        driver.get(BASE_URL + "/login");
-
-        WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-email']")));
-
-        Assert.assertTrue(email.isDisplayed(), "Email input should be displayed");
+        loginPage.open();
+        Assert.assertTrue(loginPage.isLoginFormDisplayed(), "Login form (email, password, submit) should be displayed");
     }
 
     @Test
@@ -38,16 +40,8 @@ public class LoginUiTests {
 
         String expectedPath = "/dashboard/admin";
 
-        driver.get(BASE_URL + "/login");
-
-        WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-email']")));
-        email.sendKeys("admin.sample@spabs.example");
-
-        WebElement password = driver.findElement(By.cssSelector("[data-testid='login-password']"));
-        password.sendKeys("Password123");
-
-        WebElement loginButton =driver.findElement(By.cssSelector("[data-testid='login-submit']"));
-        loginButton.click();
+        loginPage.open();
+        loginPage.loginAs(ADMIN_EMAIL, CORRECT_PASSWORD);
 
         wait.until(ExpectedConditions.urlContains(expectedPath));
 
@@ -58,21 +52,13 @@ public class LoginUiTests {
 
     @Test
     public void login_withWrongPassword_showsErrorAlert() {
-        driver.get(BASE_URL + "/login");
 
-        WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-email']")));
-        email.sendKeys("admin.sample@spabs.example");
+        loginPage.open();
+        loginPage.loginAs(ADMIN_EMAIL, WRONG_PASSWORD);
 
-        WebElement password = driver.findElement(By.cssSelector("[data-testid='login-password']"));
-        password.sendKeys("WrongPassword123");
+        Assert.assertEquals(loginPage.getErrorMessage(), "Invalid email or password");
 
-        WebElement loginButton = driver.findElement(By.cssSelector("[data-testid='login-submit']"));
-        loginButton.click();
-
-        WebElement errorAlert = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-error']")));
         String currentUrl = driver.getCurrentUrl();
-
-        Assert.assertEquals(errorAlert.getText(), "Invalid email or password");
         Assert.assertTrue(currentUrl.contains("/login"),
                 "Should stay on /login after wrong credentials, but was: " + currentUrl);
     }
@@ -80,10 +66,8 @@ public class LoginUiTests {
     @Test
     public void forgotPasswordLink_opensForgotPasswordPage() {
 
-        driver.get(BASE_URL + "/login");
-
-        WebElement link = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='login-forgot-password']")));
-        link.click();
+        loginPage.open();
+        loginPage.clickForgotPassword();
 
         String expectedPath = "/forgot-password";
         wait.until(ExpectedConditions.urlContains(expectedPath));
@@ -92,9 +76,8 @@ public class LoginUiTests {
         Assert.assertTrue(currentUrl.contains(expectedPath),
                 "Should navigate to " + expectedPath + " when clicking the link, but was: " + currentUrl);
 
-        WebElement heading = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='auth-title']")));
-
-        Assert.assertEquals(heading.getText(), "Forgot password");
+        ForgotPasswordPage forgotPasswordPage = new ForgotPasswordPage(driver, wait);
+        Assert.assertEquals(forgotPasswordPage.getTitle(), "Forgot password");
     }
 
     @AfterMethod
