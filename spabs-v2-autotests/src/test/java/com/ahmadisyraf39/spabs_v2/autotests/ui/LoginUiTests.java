@@ -1,5 +1,6 @@
 package com.ahmadisyraf39.spabs_v2.autotests.ui;
 
+import com.ahmadisyraf39.spabs_v2.autotests.api.BaseApiTest;
 import com.ahmadisyraf39.spabs_v2.autotests.pages.ForgotPasswordPage;
 import com.ahmadisyraf39.spabs_v2.autotests.pages.LoginPage;
 
@@ -12,20 +13,16 @@ import org.testng.annotations.*;
 
 import java.time.Duration;
 
-public class LoginUiTests {
+public class LoginUiTests extends BaseUiTest {
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
     private static final String CORRECT_PASSWORD = "Password123";
     private static final String WRONG_PASSWORD = "WrongPassword123";
 
-    private WebDriver driver;
-    private WebDriverWait wait;
     private LoginPage loginPage;
 
     @BeforeMethod
-    public void setup() {
-        driver = new ChromeDriver();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public void createPages() {
         loginPage = new LoginPage(driver, wait);
     }
 
@@ -80,11 +77,5 @@ public class LoginUiTests {
         Assert.assertEquals(forgotPasswordPage.getTitle(), "Forgot password");
     }
 
-    @AfterMethod
-    public void tearDown(){
-        if(driver!= null){
-            driver.quit();
-        }
-    }
 
 }
