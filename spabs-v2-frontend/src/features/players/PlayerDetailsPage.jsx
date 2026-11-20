@@ -105,7 +105,7 @@ function PlayerDetailsBody({ id, player, guardians, teams }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{player.fullName}</h1>
+        <h1 className="text-2xl font-semibold" data-testid="player-details-title">{player.fullName}</h1>
         <div className="flex gap-2">
           <Link to="/players" className="btn btn-ghost btn-sm">
             Back

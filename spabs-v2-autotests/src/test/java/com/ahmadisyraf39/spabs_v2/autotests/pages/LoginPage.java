@@ -1,5 +1,6 @@
 package com.ahmadisyraf39.spabs_v2.autotests.pages;
 
+import com.ahmadisyraf39.spabs_v2.autotests.config.TestConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -7,8 +8,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class LoginPage {
-
-    private static final String BASE_URL = "http://localhost:5173";
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -25,7 +24,7 @@ public class LoginPage {
     }
 
     public void open(){
-        driver.get(BASE_URL + "/login");
+        driver.get(TestConfig.BASE_URL + "/login");
         wait.until(ExpectedConditions.visibilityOfElementLocated(emailInput));
     }
 
