@@ -93,6 +93,59 @@ public class PlayerTests extends BaseApiTest {
             .body("message", equalTo("Player not found: " + id));
     }
 
+    public void createPlayer_withoutFullName_returns400() {
+        String body = """
+            {
+              "dateOfBirth": "2015-05-10",
+              "gender": "MALE"
+            }
+            """;
+
+        given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body(body)
+        .when()
+            .post(PLAYERS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("fullName: must not be blank"));
+    }
+
+    // Row 29
+    public void createPlayer_withoutDateOfBirth_returns400() {
+        String body = """
+            {
+              "fullName": "No Birthday",
+              "gender": "MALE"
+            }
+            """;
+
+        given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body(body)
+        .when()
+            .post(PLAYERS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("dateOfBirth: must not be null"));
+    }
+
+    // Row 30
+    public void createPlayer_withoutToken_returns401() {
+        given()
+            .contentType(ContentType.JSON)
+            .body(playerBody("No Token", "2015-05-10", "MALE"))
+        .when()
+            .post(PLAYERS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(401);
+    }
+
     // Helpers
     private String playerBody(String fullName, String dateOfBirth, String gender) {
         return """
