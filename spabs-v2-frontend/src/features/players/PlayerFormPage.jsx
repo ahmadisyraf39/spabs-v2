@@ -75,7 +75,7 @@ export default function PlayerFormPage() {
 
       <form className="card bg-base-100 flex flex-col gap-4 p-6 shadow-md" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" data-testid="player-error" className="alert alert-error text-sm">
             <span>{error}</span>
           </div>
         )}
@@ -84,6 +84,7 @@ export default function PlayerFormPage() {
           <span className="label-text mb-1">Full name</span>
           <input
             type="text"
+            data-testid="player-fullname"
             className="input input-bordered w-full"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -95,6 +96,7 @@ export default function PlayerFormPage() {
           <span className="label-text mb-1">Date of birth</span>
           <input
             type="date"
+            data-testid="player-dob"
             className="input input-bordered w-full"
             value={dateOfBirth}
             onChange={(e) => setDateOfBirth(e.target.value)}
@@ -106,6 +108,7 @@ export default function PlayerFormPage() {
           <span className="label-text mb-1">Gender</span>
           <select
             className="select select-bordered w-full"
+            data-testid="player-gender"
             value={gender}
             onChange={(e) => setGender(e.target.value)}
           >
@@ -121,7 +124,7 @@ export default function PlayerFormPage() {
           <button type="button" className="btn btn-ghost" onClick={() => navigate('/players')}>
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <button type="submit" data-testid="player-save" className="btn btn-primary" disabled={submitting}>
             {submitting ? <span className="loading loading-spinner loading-sm" /> : 'Save'}
           </button>
         </div>

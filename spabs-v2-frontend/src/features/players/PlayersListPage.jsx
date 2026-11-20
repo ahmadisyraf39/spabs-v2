@@ -80,7 +80,7 @@ export default function PlayersListPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Players</h1>
-        <Link to="/players/new" className="btn btn-primary btn-sm">
+        <Link to="/players/new" data-testid="players-new" className="btn btn-primary btn-sm">
           New player
         </Link>
       </div>
@@ -94,6 +94,7 @@ export default function PlayersListPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
         <input
           type="text"
+          data-testid="players-search"
           placeholder="Search name"
           className="input input-bordered input-sm w-full sm:min-w-[200px] sm:flex-1"
           value={search}
@@ -183,7 +184,7 @@ export default function PlayersListPage() {
               </thead>
               <tbody>
                 {pageItems.map((player) => (
-                  <tr key={player.id}>
+                  <tr key={player.id} data-testid="player-row">
                     <td className="truncate" title={player.fullName}>
                       {player.fullName}
                     </td>
@@ -193,7 +194,7 @@ export default function PlayersListPage() {
                       <span className="badge badge-ghost">{player.gender}</span>
                     </td>
                     <td className="whitespace-nowrap">
-                      <Link to={`/players/${player.id}`} className="btn btn-ghost btn-xs text-info">
+                      <Link to={`/players/${player.id}`} data-testid="player-details-link" className="btn btn-ghost btn-xs text-info">
                         Details
                       </Link>
                       <Link to={`/players/${player.id}/edit`} className="btn btn-ghost btn-xs">
