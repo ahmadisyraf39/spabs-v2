@@ -1,6 +1,7 @@
 package com.ahmadisyraf39.spabs_v2.autotests.api;
 
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -17,16 +18,17 @@ public class PlayerTests extends BaseApiTest {
     private static final String ADMIN_PASSWORD = "Password123";
 
     private String token;
+    private RequestSpecification adminSpec;
 
     @BeforeClass
     public void loginAsAdmin() {
         token = loginAndGetToken(ADMIN_EMAIL, ADMIN_PASSWORD);
+        adminSpec = authSpec(token);
     }
 
     public void createPlayer_withValidData_returns201() {
         given()
-            .header("Authorization", "Bearer " + token)
-            .contentType(ContentType.JSON)
+            .spec(adminSpec)
             .body(playerBody("Test Player", "2015-05-10", "MALE"))
         .when()
             .post(PLAYERS_ENDPOINT)
@@ -43,7 +45,7 @@ public class PlayerTests extends BaseApiTest {
         int id = createPlayer("Get Player", "2014-03-20", "FEMALE");
 
         given()
-            .header("Authorization", "Bearer " + token)
+            .spec(adminSpec)
         .when()
             .get(PLAYER_BY_ID_ENDPOINT, id)
         .then()
@@ -58,8 +60,7 @@ public class PlayerTests extends BaseApiTest {
         int id = createPlayer("Old Name", "2015-05-10", "MALE");
 
         given()
-            .header("Authorization", "Bearer " + token)
-            .contentType(ContentType.JSON)
+            .spec(adminSpec)
             .body(playerBody("New Name", "2016-01-15", "FEMALE"))
         .when()
             .put(PLAYER_BY_ID_ENDPOINT, id)
@@ -76,7 +77,7 @@ public class PlayerTests extends BaseApiTest {
         int id = createPlayer("To Delete", "2015-05-10", "MALE");
 
         given()
-            .header("Authorization", "Bearer " + token)
+            .spec(adminSpec)
         .when()
             .delete(PLAYER_BY_ID_ENDPOINT, id)
         .then()
@@ -84,7 +85,7 @@ public class PlayerTests extends BaseApiTest {
             .statusCode(204);
 
         given()
-            .header("Authorization", "Bearer " + token)
+            .spec(adminSpec)
         .when()
             .get(PLAYER_BY_ID_ENDPOINT, id)
         .then()
@@ -102,8 +103,7 @@ public class PlayerTests extends BaseApiTest {
             """;
 
         given()
-            .header("Authorization", "Bearer " + token)
-            .contentType(ContentType.JSON)
+            .spec(adminSpec)
             .body(body)
         .when()
             .post(PLAYERS_ENDPOINT)
@@ -123,8 +123,7 @@ public class PlayerTests extends BaseApiTest {
             """;
 
         given()
-            .header("Authorization", "Bearer " + token)
-            .contentType(ContentType.JSON)
+            .spec(adminSpec)
             .body(body)
         .when()
             .post(PLAYERS_ENDPOINT)

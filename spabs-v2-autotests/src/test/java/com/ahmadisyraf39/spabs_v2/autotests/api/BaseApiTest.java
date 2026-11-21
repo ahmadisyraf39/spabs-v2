@@ -1,7 +1,9 @@
 package com.ahmadisyraf39.spabs_v2.autotests.api;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.testng.annotations.BeforeClass;
 
 import static io.restassured.RestAssured.given;
@@ -39,6 +41,13 @@ public abstract class BaseApiTest {
                     .extract()
                     .path("token");
 
+    }
+
+    protected RequestSpecification authSpec(String token) {
+        return new RequestSpecBuilder()
+                .addHeader("Authorization", "Bearer " + token)
+                .setContentType(ContentType.JSON)
+                .build();
     }
 
 }
