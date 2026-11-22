@@ -86,6 +86,29 @@ public class FeeTests extends BaseApiTest {
             .body("paidAt", notNullValue());
     }
 
+    public void payFee_alreadyPaidRecord_returns400() {
+        int feeRecordId = createUnpaidFeeRecord();
+
+        // First payment succeeds
+        given()
+            .spec(adminSpec)
+        .when()
+            .post(PAY_FEE_ENDPOINT, feeRecordId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200);
+
+        // Second payment is rejected
+        given()
+            .spec(adminSpec)
+        .when()
+            .post(PAY_FEE_ENDPOINT, feeRecordId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("FeeRecord " + feeRecordId + " is already paid"));
+    }
+
     // Helpers
     private int createUnpaidFeeRecord() {
         int playerId = createPlayer();
