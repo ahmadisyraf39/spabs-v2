@@ -18,6 +18,7 @@ public class FeeTests extends BaseApiTest {
     private static final String PAY_FEE_ENDPOINT = "/fee-records/{id}/pay";
     private static final String PLAYERS_ENDPOINT = "/players";
     private static final String TEAMS_ENDPOINT = "/teams";
+    private static final String TEAM_FEE_SUMMARY_ENDPOINT = "/fee-records/team/{teamId}/summary";
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
     private static final String ADMIN_PASSWORD = "Password123";
@@ -109,21 +110,45 @@ public class FeeTests extends BaseApiTest {
             .body("message", equalTo("FeeRecord " + feeRecordId + " is already paid"));
     }
 
-    // Helpers
-    private int createUnpaidFeeRecord() {
-        int playerId = createPlayer();
+    public void teamFeeSummary_withPaidAndUnpaidRecords_returnsCorrectTotals() {
         int teamId = createTeam();
-        int feeItemId = createFeeItem("100.00");
 
-        return given()
-                    .spec(adminSpec)
-                    .body(feeRecordBody(playerId, feeItemId, teamId, futureDueDate()))
+        int paidRecordId = assignFee(createPlayer(), createFeeItem("100.00"), teamId);
+        assignFee(createPlayer(), createFeeItem("50.00"), teamId);   // stays unpaid
+
+        payFee(paidRecordId);
+
+        given()
+            .spec(adminSpec)
+        .when()
+            .get(TEAM_FEE_SUMMARY_ENDPOINT, teamId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body("teamId", equalTo(teamId))
+            .body("recordCount", equalTo(2))
+            .body("totalAmount", comparesEqualTo(new BigDecimal("150")))
+            .body("totalPaid", comparesEqualTo(new BigDecimal("100")))
+            .body("totalOutstanding", comparesEqualTo(new BigDecimal("50")));
+    }
+
+    // Helpers
+    private int assignFee(int playerId, int feeItemId, int teamId) {
+        return createAndGetId(FEE_RECORDS_ENDPOINT, feeRecordBody(playerId, feeItemId, teamId, futureDueDate()));
+    }
+
+    private void payFee(int feeRecordId) {
+        given()
+                .spec(adminSpec)
                 .when()
-                    .post(FEE_RECORDS_ENDPOINT)
+                .post(PAY_FEE_ENDPOINT, feeRecordId)
                 .then()
-                    .log().ifValidationFails()
-                    .statusCode(201)
-                    .extract().path("id");
+                .log().ifValidationFails()
+                .statusCode(200);
+    }
+
+    private int createUnpaidFeeRecord() {
+        return assignFee(createPlayer(), createFeeItem("100.00"), createTeam());
     }
 
     private int createPlayer() {
