@@ -103,7 +103,11 @@ export default function RecurringActivityFormPage() {
           Generate recurring training
         </h1>
         <div className="card bg-base-100 flex flex-col gap-4 p-6 shadow-md">
-          <div role="alert" className="alert alert-success text-sm">
+          <div
+            role="alert"
+            className="alert alert-success text-sm"
+            data-testid="recurring-success"
+          >
             <span>
               Created {createdCount} training session
               {createdCount === 1 ? "" : "s"}.
@@ -132,7 +136,11 @@ export default function RecurringActivityFormPage() {
 
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div
+            role="alert"
+            className="alert alert-error text-sm"
+            data-testid="recurring-error"
+          >
             <span>{error}</span>
           </div>
         )}
@@ -148,6 +156,7 @@ export default function RecurringActivityFormPage() {
                   className="checkbox checkbox-sm"
                   checked={applyToAllTeams}
                   onChange={(e) => handleApplyToAllChange(e.target.checked)}
+                  data-testid="recurring-apply-all"
                 />
                 <span className="label-text">Apply to all teams</span>
               </label>
@@ -163,6 +172,7 @@ export default function RecurringActivityFormPage() {
                     handleTeamIdsChange(e.target.selectedOptions)
                   }
                   disabled={applyToAllTeams}
+                  data-testid="recurring-team-select"
                 >
                   {teams.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -243,6 +253,7 @@ export default function RecurringActivityFormPage() {
                   className="select select-bordered w-full"
                   value={dayOfWeek}
                   onChange={(e) => setDayOfWeek(e.target.value)}
+                  data-testid="recurring-day"
                 >
                   {DAYS_OF_WEEK.map((value) => (
                     <option key={value} value={value}>
@@ -260,6 +271,7 @@ export default function RecurringActivityFormPage() {
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   required
+                  data-testid="recurring-start-time"
                 />
               </label>
 
@@ -281,6 +293,7 @@ export default function RecurringActivityFormPage() {
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   required
+                  data-testid="recurring-start-date"
                 />
               </label>
 
@@ -292,6 +305,7 @@ export default function RecurringActivityFormPage() {
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   required
+                  data-testid="recurring-end-date"
                 />
               </label>
             </div>
@@ -310,6 +324,7 @@ export default function RecurringActivityFormPage() {
             type="submit"
             className="btn btn-primary"
             disabled={submitting}
+            data-testid="recurring-submit"
           >
             {submitting ? (
               <span className="loading loading-spinner loading-sm" />
