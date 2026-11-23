@@ -77,6 +77,65 @@ public class RecurringActivityTests extends BaseApiTest {
         Assert.assertTrue(startTimes.contains("2027-01-26T17:00:00"), "End date (a Tuesday) missing: " + startTimes);
     }
 
+    @Test
+    public void dateRangeWithNoMatchingDay_returns400() {
+        int teamId = adminApi.createTeam("Recurring Team " + System.currentTimeMillis());
+
+        // A single Monday, but asking for Tuesdays
+        String body = recurringBody("[" + teamId + "]", false, "TUESDAY", "2027-01-04", "2027-01-04");
+
+        given()
+            .spec(adminSpec)
+            .body(body)
+        .when()
+            .post(RECURRING_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("No dates in range match the given day of week"));
+    }
+
+    @Test
+    public void noTeamsAndNotApplyToAll_returns400() {
+        String body = recurringBody("[]", false, "TUESDAY", "2027-01-04", "2027-01-26");
+
+        given()
+            .spec(adminSpec)
+            .body(body)
+        .when()
+            .post(RECURRING_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("teamIds must be provided unless applyToAllTeams is true"));
+    }
+
+    @Test
+    public void applyToAllTeams_createsOneSessionForEveryTeam() {
+        List<Integer> allTeamIds =
+                given()
+                    .spec(adminSpec)
+                .when()
+                    .get(TEAMS_ENDPOINT)
+                .then()
+                    .statusCode(200)
+                    .extract().jsonPath().getList("id", Integer.class);
+
+        // A single Tuesday, so it's exactly one session per team
+        String body = recurringBody("[]", true, "TUESDAY", "2027-01-05", "2027-01-05");
+
+        given()
+            .spec(adminSpec)
+            .body(body)
+        .when()
+            .post(RECURRING_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .body("size()", equalTo(allTeamIds.size()))
+            .body("teamId", containsInAnyOrder(allTeamIds.toArray()));
+    }
+
     // Helpers
     private String recurringBody(String teamIdsJson, boolean applyToAllTeams, String dayOfWeek,
                                  String startDate, String endDate) {
