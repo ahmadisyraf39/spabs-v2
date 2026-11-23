@@ -90,6 +90,7 @@ export default function ParentFeesPage() {
           <select
             className="select select-bordered select-sm flex-1 sm:flex-initial"
             value={childFilter}
+            data-testid="parent-fees-child-filter"
             onChange={(e) => {
               setChildFilter(e.target.value)
               resetToFirstPage()
@@ -150,7 +151,7 @@ export default function ParentFeesPage() {
             </thead>
             <tbody>
               {pageItems.map((r) => (
-                <tr key={r.id}>
+                <tr key={r.id} data-testid="parent-fee-row">
                   <td className="truncate">{r.playerName}</td>
                   <td className="hidden sm:table-cell truncate" title={r.feeItemName}>
                     {r.feeItemName}
@@ -158,7 +159,10 @@ export default function ParentFeesPage() {
                   <td>{formatCurrency(r.amount)}</td>
                   <td>{r.dueDate}</td>
                   <td>
-                    <span className={`badge badge-sm ${feeStatusBadgeClass(r)}`}>
+                    <span
+                      className={`badge badge-sm ${feeStatusBadgeClass(r)}`}
+                      data-testid="parent-fee-status"
+                    >
                       {r.overdue ? 'OVERDUE' : r.status}
                     </span>
                   </td>

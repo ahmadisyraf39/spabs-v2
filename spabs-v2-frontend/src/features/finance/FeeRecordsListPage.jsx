@@ -262,7 +262,7 @@ export default function FeeRecordsListPage() {
               </thead>
               <tbody>
                 {pageItems.map((record) => (
-                  <tr key={record.id}>
+                  <tr key={record.id} data-testid="fee-record-row">
                     <td className="truncate">
                       <Link to={`/players/${record.playerId}`} className="link link-primary text-sm">
                         {record.playerName}
@@ -278,7 +278,10 @@ export default function FeeRecordsListPage() {
                     </td>
                     <td>{formatCurrency(record.amount)}</td>
                     <td>
-                      <span className={`badge badge-sm ${feeStatusBadgeClass(record)}`}>
+                      <span
+                        className={`badge badge-sm ${feeStatusBadgeClass(record)}`}
+                        data-testid="fee-record-status"
+                      >
                         {record.overdue ? 'OVERDUE' : record.status}
                       </span>
                     </td>
@@ -291,6 +294,7 @@ export default function FeeRecordsListPage() {
                           className="btn btn-ghost btn-xs"
                           onClick={() => setPayTarget(record)}
                           disabled={payingId === record.id}
+                          data-testid="fee-record-pay"
                         >
                           {payingId === record.id ? (
                             <span className="loading loading-spinner loading-xs" />
