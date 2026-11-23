@@ -16,7 +16,6 @@ public class FeesUiTests extends BaseUiTest {
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
     private static final String PARENT_EMAIL = "parent1@spabs.example";
-    private static final String PASSWORD = "Password123";
 
     private TestDataApi adminApi;
 
@@ -25,7 +24,7 @@ public class FeesUiTests extends BaseUiTest {
 
     @BeforeClass
     public void createApiClient() {
-        adminApi = TestDataApi.loginAs(ADMIN_EMAIL, PASSWORD);
+        adminApi = TestDataApi.loginAs(ADMIN_EMAIL, SAMPLE_PASSWORD);
     }
 
     @BeforeMethod
@@ -46,7 +45,7 @@ public class FeesUiTests extends BaseUiTest {
         adminApi.assignFee(playerId, feeItemId, teamId, futureDueDate());
 
         // UI: the part this test is about
-        loginAs(ADMIN_EMAIL, "/dashboard/admin");
+        loginAs(ADMIN_EMAIL, SAMPLE_PASSWORD,"/dashboard/admin");
         feeRecordsPage.open(teamId, playerName);
 
         Assert.assertEquals(feeRecordsPage.getStatusOf(playerName), "UNPAID",
@@ -67,7 +66,7 @@ public class FeesUiTests extends BaseUiTest {
         int teamId = adminApi.createTeam("Fee UI Team " + ts);
         int playerId = adminApi.createPlayer(playerName);
 
-        int parentId = TestDataApi.loginAs(PARENT_EMAIL, PASSWORD).getMyParentId();
+        int parentId = TestDataApi.loginAs(PARENT_EMAIL, SAMPLE_PASSWORD).getMyParentId();
         adminApi.linkPlayerToParent(playerId, parentId);
 
         int feeItemId = adminApi.createFeeItem("Fee UI Item " + ts, "100.00");
@@ -75,21 +74,14 @@ public class FeesUiTests extends BaseUiTest {
         adminApi.payFee(feeRecordId);
 
         // UI: what the parent sees
-        loginAs(PARENT_EMAIL, "/dashboard/parent");
+        loginAs(PARENT_EMAIL, SAMPLE_PASSWORD, "/dashboard/parent");
         parentFeesPage.open();
         parentFeesPage.filterByChild(playerName);
 
         Assert.assertEquals(parentFeesPage.getStatusOf(playerName), "PAID");
     }
 
-    //Helpers
-    private void loginAs(String email, String expectedPath) {
-        LoginPage loginPage = new LoginPage(driver, wait);
-        loginPage.open();
-        loginPage.loginAs(email, PASSWORD);
-        wait.until(ExpectedConditions.urlContains(expectedPath));
-    }
-
+    //Helper
     private String futureDueDate() {
         return LocalDate.now().plusDays(30).toString();
     }

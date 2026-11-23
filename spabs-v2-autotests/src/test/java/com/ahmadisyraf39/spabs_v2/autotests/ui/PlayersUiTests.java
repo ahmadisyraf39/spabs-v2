@@ -12,7 +12,6 @@ import org.testng.annotations.Test;
 public class PlayersUiTests extends BaseUiTest {
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
-    private static final String ADMIN_PASSWORD = "Password123";
 
     private static final String TYPED_DATE_OF_BIRTH = "10052015";
 
@@ -21,15 +20,12 @@ public class PlayersUiTests extends BaseUiTest {
     private PlayerDetailsPage playerDetailsPage;
 
     @BeforeMethod
-    public void loginAsAdmin() {
+    public void createPagesAndLoginAsAdmin() {
         playersListPage = new PlayersListPage(driver, wait);
         playerFormPage = new PlayerFormPage(driver, wait);
         playerDetailsPage = new PlayerDetailsPage(driver, wait);
 
-        LoginPage loginPage = new LoginPage(driver, wait);
-        loginPage.open();
-        loginPage.loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
-        wait.until(ExpectedConditions.urlContains("/dashboard/admin"));
+        loginAs(ADMIN_EMAIL, SAMPLE_PASSWORD, "/dashboard/admin");
     }
 
     @Test

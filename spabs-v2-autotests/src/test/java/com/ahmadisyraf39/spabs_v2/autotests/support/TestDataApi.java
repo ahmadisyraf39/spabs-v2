@@ -42,6 +42,13 @@ public class TestDataApi {
         return new TestDataApi(token);
     }
 
+    // New users always start with mustChangePassword = true
+    public void createUser(String email, String password, String role) {
+        post("/users", """
+        {"email": "%s", "password": "%s", "fullName": "Test User", "role": "%s", "active": true}
+        """.formatted(email, password, role));
+    }
+
     public int createTeam(String name) {
         return post("/teams", """
             {"name": "%s", "category": "BOYS", "ageGroup": "U12"}
@@ -103,5 +110,28 @@ public class TestDataApi {
                     .log().ifValidationFails()
                     .statusCode(201)
                     .extract().path("id");
+    }
+
+    public int createActivity(int teamId, String startAt) {
+        return post("/activities", """
+        {"teamId": %d, "type": "TRAINING", "title": "Role Test Session", "startAt": "%s"}
+        """.formatted(teamId, startAt));
+    }
+
+    // Only works when this client is logged in as a coach
+    public int getMyCoachId() {
+        return given()
+                .spec(spec)
+                .when()
+                .get("/coaches/me")
+                .then()
+                .statusCode(200)
+                .extract().path("id");
+    }
+
+    public void assignCoachToTeam(int coachId, int teamId) {
+        post("/coach-teams", """
+        {"coachId": %d, "teamId": %d, "role": "HEAD_COACH", "status": "ACTIVE", "joinedAt": "%s"}
+        """.formatted(coachId, teamId, java.time.LocalDate.now()));
     }
 }

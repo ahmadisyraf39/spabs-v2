@@ -18,7 +18,7 @@ export default function Sidebar({ navItems }) {
           <span className="is-drawer-close:hidden truncate text-lg font-semibold">SPABS-V2</span>
         </div>
 
-        <nav className="flex-1 py-4">
+        <nav className="flex-1 py-4" data-testid="sidebar-nav">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
