@@ -1,6 +1,7 @@
 package com.ahmadisyraf39.spabs_v2.autotests.ui;
 
 import com.ahmadisyraf39.spabs_v2.autotests.pages.LoginPage;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -20,6 +21,7 @@ public abstract class BaseUiTest {
     @BeforeMethod
     public void startBrowser(){
         driver = new ChromeDriver();
+        driver.manage().window().setSize(new Dimension(1366, 768));
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
