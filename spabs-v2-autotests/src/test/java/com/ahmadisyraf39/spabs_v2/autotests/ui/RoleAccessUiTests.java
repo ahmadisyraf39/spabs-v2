@@ -1,5 +1,7 @@
 package com.ahmadisyraf39.spabs_v2.autotests.ui;
 
+import com.ahmadisyraf39.spabs_v2.autotests.config.TestConfig;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -28,5 +30,17 @@ public class RoleAccessUiTests extends BaseUiTest {
         Assert.assertTrue(currentUrl.endsWith(expectedPath),
                 email + " should land on " + expectedPath + " but was: " + currentUrl);
     }
+
+    @Test
+    public void notLoggedIn_openingPlayers_redirectsToLogin() {
+        driver.get(TestConfig.BASE_URL + "/players");
+
+        wait.until(ExpectedConditions.urlContains("/login"));
+
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.endsWith("/login"),
+                "Anonymous user opening /players should be sent to /login, but was: " + currentUrl);
+    }
+
 
 }
