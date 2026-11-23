@@ -56,4 +56,15 @@ public class RecurringActivityUiTests extends BaseUiTest {
                 "Select at least one team, or check \"Apply to all teams\".");
     }
 
+    @Test
+    public void applyToAllTeams_disablesTeamSelect() {
+        formPage.open();
+        Assert.assertTrue(formPage.isTeamSelectEnabled(), "Precondition: team list starts enabled");
+
+        formPage.checkApplyToAllTeams();
+
+        Assert.assertFalse(formPage.isTeamSelectEnabled(),
+                "Team list should be disabled when 'Apply to all teams' is checked");
+    }
+
 }
