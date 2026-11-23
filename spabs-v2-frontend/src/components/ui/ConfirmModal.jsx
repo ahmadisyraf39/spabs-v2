@@ -15,7 +15,12 @@ export default function ConfirmModal({
           <button type="button" className="btn" onClick={onCancel}>
             Cancel
           </button>
-          <button type="button" className={`btn ${confirmClass}`} onClick={onConfirm}>
+          <button
+            type="button"
+            className={`btn ${confirmClass}`}
+            onClick={onConfirm}
+            data-testid="confirm-modal-confirm"
+          >
             {confirmLabel}
           </button>
         </div>
