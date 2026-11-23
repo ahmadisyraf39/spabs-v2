@@ -42,6 +42,13 @@ public class TestDataApi {
         return new TestDataApi(token);
     }
 
+    // New users always start with mustChangePassword = true
+    public void createUser(String email, String password, String role) {
+        post("/users", """
+        {"email": "%s", "password": "%s", "fullName": "Test User", "role": "%s", "active": true}
+        """.formatted(email, password, role));
+    }
+
     public int createTeam(String name) {
         return post("/teams", """
             {"name": "%s", "category": "BOYS", "ageGroup": "U12"}

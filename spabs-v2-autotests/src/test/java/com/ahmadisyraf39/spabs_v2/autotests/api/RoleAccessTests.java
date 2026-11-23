@@ -96,6 +96,28 @@ public class RoleAccessTests extends BaseApiTest {
             .body("status", equalTo("PRESENT"));
     }
 
+    // forced password change blocks other endpoints
+    @Test
+    public void userWhoMustChangePassword_accessingPlayers_returns403() {
+        // A brand-new user, so they must change their password
+        String email = "mustchange" + System.currentTimeMillis() + "@spabs.example";
+        String password = "TempPass123!";
+
+        TestDataApi.loginAs("admin.sample@spabs.example", PASSWORD)
+                .createUser(email, password, "PARENT");
+
+        RequestSpecification newUser = authSpec(loginAndGetToken(email, password));
+
+        given()
+            .spec(newUser)
+        .when()
+            .get("/players")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(403)
+            .body("message", equalTo("Password change required before continuing"));
+    }
+
     // Helpers
     private String oneHourAgo() {
         return LocalDateTime.now().minusHours(1)
