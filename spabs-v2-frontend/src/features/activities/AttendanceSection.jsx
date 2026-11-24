@@ -94,6 +94,7 @@ export default function AttendanceSection({ activityId, teamId, activityDate, ed
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
+                data-testid="attendance-save"
                 onClick={handleSave}
                 disabled={saving}
               >
@@ -110,12 +111,12 @@ export default function AttendanceSection({ activityId, teamId, activityDate, ed
         )}
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error text-sm" data-testid="attendance-error">
             <span>{error}</span>
           </div>
         )}
         {success && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="alert alert-success text-sm" data-testid="attendance-success">
             <span>{success}</span>
           </div>
         )}
@@ -138,7 +139,7 @@ export default function AttendanceSection({ activityId, teamId, activityDate, ed
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.playerId}>
+                  <tr key={row.playerId} data-testid="attendance-row">
                     <td>
                       {isAdmin ? (
                         <Link to={`/players/${row.playerId}`} className="link link-primary text-sm">
@@ -151,6 +152,7 @@ export default function AttendanceSection({ activityId, teamId, activityDate, ed
                     <td>
                       {editable ? (
                         <select
+                          data-testid="attendance-status"
                           className={`select select-bordered select-sm ${attendanceStatusSelectClass(row.status)}`}
                           value={row.status}
                           onChange={(e) => handleStatusChange(row.playerId, e.target.value)}
