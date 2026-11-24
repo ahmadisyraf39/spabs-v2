@@ -5,6 +5,8 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
 
 // Creates test data through the API, so UI tests only test the UI part
@@ -156,6 +158,23 @@ public class TestDataApi {
                 .then()
                     .statusCode(200)
                     .extract().path("find { it.playerId == " + playerId + " }.status");
+    }
+
+    // IDs of everything at an endpoint
+    public List<Integer> getIds(String endpoint) {
+        return given()
+                    .spec(spec)
+                .when()
+                    .get(endpoint)
+                .then()
+                    .statusCode(200)
+                    .extract().jsonPath().getList("id", Integer.class);
+    }
+
+    public int createAnnouncement(int teamId, String title) {
+        return post("/announcements", """
+        {"teamId": %d, "title": "%s", "content": "Scoping test announcement"}
+        """.formatted(teamId, title));
     }
 
 }
