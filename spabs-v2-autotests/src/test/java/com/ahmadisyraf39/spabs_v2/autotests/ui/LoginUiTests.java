@@ -74,6 +74,7 @@ public class LoginUiTests extends BaseUiTest {
                 "Should navigate to " + expectedPath + " when clicking the link, but was: " + currentUrl);
 
         ForgotPasswordPage forgotPasswordPage = new ForgotPasswordPage(driver, wait);
+        forgotPasswordPage.waitUntilLoaded();
         Assert.assertEquals(forgotPasswordPage.getTitle(), "Forgot password");
     }
 
