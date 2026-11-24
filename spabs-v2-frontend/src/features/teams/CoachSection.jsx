@@ -4,10 +4,7 @@ import ConfirmModal from '../../components/ui/ConfirmModal'
 import { createCoachTeam, deleteCoachTeam, updateCoachTeam } from '../../lib/api/coachTeams'
 import { getCoachOptions, getCoachingStaffForTeam } from '../../lib/teamRelations'
 import { COACH_TEAM_ROLES } from './teamEnums'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function CoachSection({ teamId }) {
   const [staff, setStaff] = useState([])

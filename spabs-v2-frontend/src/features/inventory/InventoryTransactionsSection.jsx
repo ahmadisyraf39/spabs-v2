@@ -8,10 +8,7 @@ import {
 } from '../../lib/api/inventoryTransactions'
 import { formatCurrency } from '../../lib/formatCurrency'
 import { INVENTORY_TRANSACTION_TYPES, quantityEffectLabel, transactionTypeBadgeClass } from './inventoryEnums'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function InventoryTransactionsSection({ inventoryId, onQuantityChange }) {
   const [transactions, setTransactions] = useState([])

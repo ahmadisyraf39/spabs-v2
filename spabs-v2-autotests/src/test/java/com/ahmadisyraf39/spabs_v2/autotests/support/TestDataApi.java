@@ -131,16 +131,20 @@ public class TestDataApi {
                 .extract().path("id");
     }
 
-    public void assignCoachToTeam(int coachId, int teamId) {
-        post("/coach-teams", """
-        {"coachId": %d, "teamId": %d, "role": "HEAD_COACH", "status": "ACTIVE", "joinedAt": "%s"}
-        """.formatted(coachId, teamId, java.time.LocalDate.now()));
+    public int addPlayerToTeam(int playerId, int teamId, String joinedAt) {
+        return addPlayerToTeam(playerId, teamId, null, joinedAt);
     }
 
-    public void addPlayerToTeam(int playerId, int teamId, String joinedAt) {
-        post("/player-teams", """
-        {"playerId": %d, "teamId": %d, "status": "ACTIVE", "joinedAt": "%s"}
-        """.formatted(playerId, teamId, joinedAt));
+    public int addPlayerToTeam(int playerId, int teamId, Integer jerseyNumber, String joinedAt) {
+        return post("/player-teams", """
+        {"playerId": %d, "teamId": %d, "jerseyNumber": %s, "status": "ACTIVE", "joinedAt": "%s"}
+        """.formatted(playerId, teamId, jerseyNumber, joinedAt));
+    }
+
+    public int assignCoachToTeam(int coachId, int teamId) {
+        return post("/coach-teams", """
+        {"coachId": %d, "teamId": %d, "role": "HEAD_COACH", "status": "ACTIVE", "joinedAt": "%s"}
+        """.formatted(coachId, teamId, java.time.LocalDate.now()));
     }
 
     public int recordAttendance(int activityId, int playerId, String status) {
@@ -175,6 +179,16 @@ public class TestDataApi {
         return post("/announcements", """
         {"teamId": %d, "title": "%s", "content": "Scoping test announcement"}
         """.formatted(teamId, title));
+    }
+
+    public String getPlayerTeamStatus(int playerTeamId) {
+        return given()
+            .spec(spec)
+        .when()
+            .get("/player-teams/{id}", playerTeamId)
+        .then()
+            .statusCode(200)
+            .extract().path("status");
     }
 
 }

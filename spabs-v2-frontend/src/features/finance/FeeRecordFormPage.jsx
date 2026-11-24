@@ -6,10 +6,7 @@ import { getPlayers } from '../../lib/api/players'
 import { getTeams } from '../../lib/api/teams'
 import { formatCurrency } from '../../lib/formatCurrency'
 import { getRosterForTeam } from '../../lib/teamRelations'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function FeeRecordFormPage() {
   const navigate = useNavigate()
