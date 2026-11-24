@@ -181,4 +181,14 @@ public class TestDataApi {
         """.formatted(teamId, title));
     }
 
+    public String getPlayerTeamStatus(int playerTeamId) {
+        return given()
+            .spec(spec)
+        .when()
+            .get("/player-teams/{id}", playerTeamId)
+        .then()
+            .statusCode(200)
+            .extract().path("status");
+    }
+
 }
