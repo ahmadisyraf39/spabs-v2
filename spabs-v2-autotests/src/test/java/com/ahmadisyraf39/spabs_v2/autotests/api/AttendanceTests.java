@@ -5,6 +5,7 @@ import io.restassured.specification.RequestSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -16,6 +17,8 @@ public class AttendanceTests extends BaseApiTest {
 
     private static final String ATTENDANCES_ENDPOINT = "/attendances";
     private static final String BULK_ENDPOINT = "/attendances/bulk";
+    private static final String ATTENDANCE_BY_ID_ENDPOINT = "/attendances/{id}";
+    private static final String SUMMARY_ENDPOINT = "/attendances/summary";
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
     private static final String COACH_EMAIL = "coach1@spabs.example";
@@ -126,6 +129,58 @@ public class AttendanceTests extends BaseApiTest {
             .body("size()", equalTo(2))
             .body("find { it.playerId == %d }.status", withArgs(player1), equalTo("LATE"))
             .body("find { it.playerId == %d }.status", withArgs(player2), equalTo("EXCUSED"));
+    }
+
+    @Test
+    public void coachEditingAttendanceAfterThreeDayWindow_returns403() {
+        int teamId = newTeam();
+        adminApi.assignCoachToTeam(coachApi.getMyCoachId(), teamId);
+
+        // An activity that started 4 days ago: outside the coach's 3-day window
+        int activityId = adminApi.createActivity(teamId, hoursAgo(4 * 24));
+        int playerId = adminApi.createPlayer("Window Player " + System.currentTimeMillis());
+
+        // Admins have no window, so the admin can create the record
+        int attendanceId = adminApi.recordAttendance(activityId, playerId, "PRESENT");
+
+        given()
+            .spec(coachSpec)
+            .body(attendanceBody(activityId, playerId, "ABSENT"))
+        .when()
+            .put(ATTENDANCE_BY_ID_ENDPOINT, attendanceId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(403)
+            .body("message", equalTo("Attendance can only be recorded between the activity start time and 3 days after"));
+    }
+
+    @Test
+    public void attendanceSummary_countsStatusesAndCalculatesPercentage() {
+        int teamId = newTeam();
+        int playerId = adminApi.createPlayer("Summary Player " + System.currentTimeMillis());
+
+        // Four sessions, one of each status
+        adminApi.recordAttendance(adminApi.createActivity(teamId, hoursAgo(4)), playerId, "PRESENT");
+        adminApi.recordAttendance(adminApi.createActivity(teamId, hoursAgo(3)), playerId, "LATE");
+        adminApi.recordAttendance(adminApi.createActivity(teamId, hoursAgo(2)), playerId, "ABSENT");
+        adminApi.recordAttendance(adminApi.createActivity(teamId, hoursAgo(1)), playerId, "EXCUSED");
+
+        // (present + late) / (total - excused) = 2 / 3 = 66.7%
+        given()
+            .spec(adminSpec)
+            .queryParam("playerId", playerId)
+            .queryParam("teamId", teamId)
+        .when()
+            .get(SUMMARY_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body("totalRecords", equalTo(4))
+            .body("presentCount", equalTo(1))
+            .body("lateCount", equalTo(1))
+            .body("absentCount", equalTo(1))
+            .body("excusedCount", equalTo(1))
+            .body("attendancePercentage", comparesEqualTo(new BigDecimal("66.7")));
     }
 
 
