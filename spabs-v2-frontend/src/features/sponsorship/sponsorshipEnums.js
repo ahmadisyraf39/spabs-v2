@@ -1,3 +1,5 @@
+import { todayIso } from '../../lib/dateTimeUtils'
+
 export const SPONSORSHIP_TYPES = ['CASH', 'EQUIPMENT', 'JERSEY', 'FOOD', 'SERVICE', 'OTHER']
 
 export function sponsorshipTypeBadgeClass() {
@@ -5,7 +7,7 @@ export function sponsorshipTypeBadgeClass() {
 }
 
 export function sponsorshipStatus(record) {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   if (today < record.startDate) return 'UPCOMING'
   if (today > record.endDate) return 'EXPIRED'
   return 'ACTIVE'

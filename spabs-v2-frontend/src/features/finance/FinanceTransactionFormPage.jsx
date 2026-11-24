@@ -8,10 +8,7 @@ import {
   updateFinanceTransaction,
 } from '../../lib/api/financeTransactions'
 import { categoriesForType, financeReferenceLabel, FINANCE_TYPES } from './financeLedgerEnums'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function FinanceTransactionFormPage() {
   const { id } = useParams()

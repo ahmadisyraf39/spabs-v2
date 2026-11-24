@@ -7,10 +7,7 @@ import {
 } from '../../lib/api/clubSponsorships'
 import { getSponsors } from '../../lib/api/sponsors'
 import { SPONSORSHIP_TYPES } from './sponsorshipEnums'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function ClubSponsorshipFormPage() {
   const { id } = useParams()

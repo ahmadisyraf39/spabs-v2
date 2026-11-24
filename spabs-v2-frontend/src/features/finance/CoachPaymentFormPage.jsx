@@ -3,10 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { createCoachPayment, getCoachPayment, updateCoachPayment } from '../../lib/api/coachPayments'
 import { getCoachOptions } from '../../lib/teamRelations'
 import { COACH_PAYMENT_TYPES } from './financeLedgerEnums'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function CoachPaymentFormPage() {
   const { id } = useParams()

@@ -7,10 +7,7 @@ import { getPlayerTeamProgress } from '../../lib/api/playerProgress'
 import { attendanceProgressColor } from '../../lib/attendanceUtils'
 import { moduleProgressColor } from '../progress/progressEnums'
 import { getPlayerOptions, getRosterForTeam } from '../../lib/teamRelations'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/dateTimeUtils'
 
 export default function RosterSection({ teamId }) {
   const [roster, setRoster] = useState([])
