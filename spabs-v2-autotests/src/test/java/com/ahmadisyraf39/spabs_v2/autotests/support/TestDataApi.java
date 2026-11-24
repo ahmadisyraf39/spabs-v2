@@ -134,4 +134,17 @@ public class TestDataApi {
         {"coachId": %d, "teamId": %d, "role": "HEAD_COACH", "status": "ACTIVE", "joinedAt": "%s"}
         """.formatted(coachId, teamId, java.time.LocalDate.now()));
     }
+
+    public void addPlayerToTeam(int playerId, int teamId, String joinedAt) {
+        post("/player-teams", """
+        {"playerId": %d, "teamId": %d, "status": "ACTIVE", "joinedAt": "%s"}
+        """.formatted(playerId, teamId, joinedAt));
+    }
+
+    public int recordAttendance(int activityId, int playerId, String status) {
+        return post("/attendances", """
+        {"activityId": %d, "playerId": %d, "status": "%s"}
+        """.formatted(activityId, playerId, status));
+    }
+
 }
