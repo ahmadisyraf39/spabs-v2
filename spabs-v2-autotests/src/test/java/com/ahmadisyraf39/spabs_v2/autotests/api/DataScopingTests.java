@@ -100,4 +100,36 @@ public class DataScopingTests extends BaseApiTest {
             .statusCode(403);
     }
 
+    //Coach
+    @Test
+    public void coach_viewingOwnTeamRoster_returns200() {
+        given()
+            .spec(coachSpec)
+            .queryParam("teamId", ownTeamId)
+        .when()
+            .get("/player-teams")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200);
+    }
+
+    @DataProvider(name = "coachForbiddenRequests")
+    public Object[][] coachForbiddenRequests() {
+        return new Object[][] {
+                { "another coach's payments",          "/coach-payments?coachId=" + otherCoachId },
+                { "roster of a team they don't coach", "/player-teams?teamId=" + otherTeamId },
+        };
+    }
+
+    @Test(dataProvider = "coachForbiddenRequests")
+    public void coach_accessingOtherCoachesData_returns403(String description, String path) {
+        given()
+            .spec(coachSpec)
+        .when()
+            .get(path)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(403);
+    }
+
 }
