@@ -255,7 +255,7 @@ export default function RosterSection({ teamId }) {
                   </thead>
                   <tbody>
                     {roster.map((link) => (
-                      <tr key={link.id}>
+                      <tr key={link.id} data-testid="roster-row">
                         <td>
                           <Link to={`/players/${link.playerId}`} className="link link-primary text-sm">
                             {link.fullName}
@@ -305,12 +305,17 @@ export default function RosterSection({ teamId }) {
                           )}
                         </td>
                         <td>
-                          <span className={`badge badge-soft ${link.status === 'ACTIVE' ? 'badge-success' : 'badge-neutral'}`}>
+                          <span
+                            className={`badge badge-soft ${link.status === 'ACTIVE' ? 'badge-success' : 'badge-neutral'}`}
+                            data-testid="roster-status"
+                          >
                             {link.status}
                           </span>
                         </td>
                         <td className="hidden sm:table-cell">{link.joinedAt}</td>
-                        <td className="hidden sm:table-cell">{link.leftAt ?? '—'}</td>
+                        <td className="hidden sm:table-cell" data-testid="roster-left-at">
+                          {link.leftAt ?? '—'}
+                        </td>
                         <td>
                           {link.attendanceRecorded ? (
                             <div className="flex items-center gap-3">
@@ -362,6 +367,7 @@ export default function RosterSection({ teamId }) {
                               className="btn btn-ghost btn-xs"
                               onClick={() => setEndStintTarget(link)}
                               disabled={actionId === link.id}
+                              data-testid="roster-end-stint"
                             >
                               End stint
                             </button>
