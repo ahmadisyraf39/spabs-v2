@@ -77,27 +77,34 @@ public class DataScopingTests extends BaseApiTest {
             .body("id", equalTo(ownChildId));
     }
 
+    // Correctly protected endpoints
     @DataProvider(name = "parentForbiddenRequests")
     public Object[][] parentForbiddenRequests() {
         return new Object[][] {
-                { "another child's profile",          "/players/" + otherChildId },
-                { "another child's fee records",      "/fee-records?playerId=" + otherChildId },
-                { "another parent's activities",      "/activities?parentId=" + otherParentId },
-                { "another child's attendance",       "/attendances?playerId=" + otherChildId },
-                { "every user's account details",     "/users" },
-                { "every parent's address/contact",   "/parents" },
+                { "another child's fee records",  "/fee-records?playerId=" + otherChildId },
+                { "another parent's activities",  "/activities?parentId=" + otherParentId },
         };
     }
 
     @Test(dataProvider = "parentForbiddenRequests")
     public void parent_accessingOtherFamiliesData_returns403(String description, String path) {
-        given()
-            .spec(parentSpec)
-        .when()
-            .get(path)
-        .then()
-            .log().ifValidationFails()
-            .statusCode(403);
+        assertForbidden(parentSpec, path);
+    }
+
+    // Known data exposure bugs: see issues #8 and #9. Remove the group once fixed.
+    @DataProvider(name = "parentKnownBugRequests")
+    public Object[][] parentKnownBugRequests() {
+        return new Object[][] {
+                { "another child's profile (#9)",         "/players/" + otherChildId },
+                { "another child's attendance (#9)",      "/attendances?playerId=" + otherChildId },
+                { "every user's account details (#8)",    "/users" },
+                { "every parent's address/contact (#8)",  "/parents" },
+        };
+    }
+
+    @Test(dataProvider = "parentKnownBugRequests", groups = "known-bugs")
+    public void parent_accessingOtherFamiliesData_knownBug_returns403(String description, String path) {
+        assertForbidden(parentSpec, path);
     }
 
     //Coach
@@ -113,23 +120,30 @@ public class DataScopingTests extends BaseApiTest {
             .statusCode(200);
     }
 
+    // Correctly protected: must keep passing
     @DataProvider(name = "coachForbiddenRequests")
     public Object[][] coachForbiddenRequests() {
         return new Object[][] {
-                { "another coach's payments",          "/coach-payments?coachId=" + otherCoachId },
-                { "roster of a team they don't coach", "/player-teams?teamId=" + otherTeamId },
+                { "another coach's payments", "/coach-payments?coachId=" + otherCoachId },
         };
     }
 
     @Test(dataProvider = "coachForbiddenRequests")
     public void coach_accessingOtherCoachesData_returns403(String description, String path) {
-        given()
-            .spec(coachSpec)
-        .when()
-            .get(path)
-        .then()
-            .log().ifValidationFails()
-            .statusCode(403);
+        assertForbidden(coachSpec, path);
+    }
+
+    // Needs a decision: see issue #10
+    @DataProvider(name = "coachKnownBugRequests")
+    public Object[][] coachKnownBugRequests() {
+        return new Object[][] {
+                { "roster of a team they don't coach (#10)", "/player-teams?teamId=" + otherTeamId },
+        };
+    }
+
+    @Test(dataProvider = "coachKnownBugRequests", groups = "known-bugs")
+    public void coach_accessingOtherCoachesData_knownBug_returns403(String description, String path) {
+        assertForbidden(coachSpec, path);
     }
 
     //"My" endpoints
@@ -162,6 +176,17 @@ public class DataScopingTests extends BaseApiTest {
             .log().ifValidationFails()
             .statusCode(200)
             .body("id", not(hasItem(unrelatedAnnouncementId)));
+    }
+
+    // Helpers
+    private void assertForbidden(RequestSpecification spec, String path) {
+        given()
+            .spec(spec)
+        .when()
+            .get(path)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(403);
     }
 
 }
