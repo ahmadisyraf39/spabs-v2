@@ -182,6 +182,31 @@ public class MembershipHistoryTests extends BaseApiTest {
             .body("find { it.id == %d }.leftAt", withArgs(coachTeamId), equalTo(today()));
     }
 
+    //Permanent remove
+
+    // DELETE removes the record permanently (by design, for mistaken entries)
+    @Test
+    public void removeRosterEntry_deletesItPermanently() {
+        int playerTeamId = adminApi.addPlayerToTeam(newPlayer(), newTeam(), today());
+
+        given()
+            .spec(adminSpec)
+        .when()
+            .delete(PLAYER_TEAM_BY_ID_ENDPOINT, playerTeamId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(204);
+
+        given()
+            .spec(adminSpec)
+        .when()
+            .get(PLAYER_TEAM_BY_ID_ENDPOINT, playerTeamId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(404)
+            .body("message", equalTo("PlayerTeam not found: " + playerTeamId));
+    }
+
 
     // Helpers
     private int newTeam() {
