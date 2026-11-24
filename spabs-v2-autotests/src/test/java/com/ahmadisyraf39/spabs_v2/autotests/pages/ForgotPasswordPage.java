@@ -7,6 +7,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class ForgotPasswordPage {
 
+    private static final String PAGE_TITLE = "Forgot password";
+
     private final WebDriver driver;
     private final WebDriverWait wait;
 
@@ -17,8 +19,12 @@ public class ForgotPasswordPage {
         this.wait = wait;
     }
 
-    public String getTitle() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(title)).getText();
+    //wait until it shows the page's title, not just until it's visible
+    public void waitUntilLoaded() {
+        wait.until(ExpectedConditions.textToBe(title, PAGE_TITLE));
     }
 
+    public String getTitle() {
+        return driver.findElement(title).getText();
+    }
 }
