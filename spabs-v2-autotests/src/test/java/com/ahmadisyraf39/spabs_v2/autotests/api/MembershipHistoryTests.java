@@ -97,6 +97,55 @@ public class MembershipHistoryTests extends BaseApiTest {
             .body("find { it.teamId == %d }.status", withArgs(newTeamId), equalTo("ACTIVE"));
     }
 
+    //Jersey numbers
+
+    // jersey number already used by an active player returns 409
+    @Test
+    public void jerseyNumberTakenByActivePlayer_returns409() {
+        int teamId = newTeam();
+        adminApi.addPlayerToTeam(newPlayer(), teamId, 7, today());
+
+        given()
+            .spec(adminSpec)
+            .body(playerTeamBody(newPlayer(), teamId, 7, "ACTIVE", today(), null))
+        .when()
+            .post(PLAYER_TEAMS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(409)
+            .body("message", equalTo("Jersey number 7 is already assigned to an active player on this team"));
+    }
+
+    // an inactive player's jersey number can be reused
+    @Test
+    public void jerseyNumberOfInactivePlayer_canBeReused() {
+        int teamId = newTeam();
+        int formerPlayerId = newPlayer();
+        String joinedAt = daysAgo(30);
+        int formerStintId = adminApi.addPlayerToTeam(formerPlayerId, teamId, 7, joinedAt);
+
+        // The first player leaves the team
+        given()
+            .spec(adminSpec)
+            .body(playerTeamBody(formerPlayerId, teamId, 7, "INACTIVE", joinedAt, today()))
+        .when()
+            .put(PLAYER_TEAM_BY_ID_ENDPOINT, formerStintId)
+        .then()
+            .statusCode(200);
+
+        // A new player can now take number 7
+        given()
+            .spec(adminSpec)
+            .body(playerTeamBody(newPlayer(), teamId, 7, "ACTIVE", today(), null))
+        .when()
+            .post(PLAYER_TEAMS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .body("jerseyNumber", equalTo(7))
+            .body("status", equalTo("ACTIVE"));
+    }
+
 
     // Helpers
     private int newTeam() {
