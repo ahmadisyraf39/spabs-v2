@@ -132,4 +132,36 @@ public class DataScopingTests extends BaseApiTest {
             .statusCode(403);
     }
 
+    //"My" endpoints
+    @DataProvider(name = "rolesForMyUpcoming")
+    public Object[][] rolesForMyUpcoming() {
+        return new Object[][] { { "parent" }, { "coach" } };
+    }
+
+    @Test(dataProvider = "rolesForMyUpcoming")
+    public void myUpcoming_doesNotIncludeUnrelatedTeamsActivities(String role) {
+        RequestSpecification spec = role.equals("parent") ? parentSpec : coachSpec;
+
+        given()
+            .spec(spec)
+        .when()
+            .get("/activities/my-upcoming")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body("id", not(hasItem(unrelatedActivityId)));
+    }
+
+    @Test
+    public void myAnnouncements_doesNotIncludeUnrelatedTeamsAnnouncements() {
+        given()
+            .spec(parentSpec)
+        .when()
+            .get("/announcements/mine")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body("id", not(hasItem(unrelatedAnnouncementId)));
+    }
+
 }
