@@ -15,8 +15,11 @@ public class MembershipHistoryTests extends BaseApiTest {
 
     private static final String PLAYER_TEAMS_ENDPOINT = "/player-teams";
     private static final String PLAYER_TEAM_BY_ID_ENDPOINT = "/player-teams/{id}";
+    private static final String COACH_TEAMS_ENDPOINT = "/coach-teams";
+    private static final String COACH_TEAM_BY_ID_ENDPOINT = "/coach-teams/{id}";
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
+    private static final String COACH_EMAIL = "coach1@spabs.example";
     private static final String PASSWORD = "Password123";
 
     private RequestSpecification adminSpec;
@@ -144,6 +147,39 @@ public class MembershipHistoryTests extends BaseApiTest {
             .statusCode(201)
             .body("jerseyNumber", equalTo(7))
             .body("status", equalTo("ACTIVE"));
+    }
+
+    //Coach history
+
+    // coach-team status INACTIVE keeps coach history
+    @Test
+    public void coachLeavingTeam_keepsCoachHistory() {
+        int coachId = TestDataApi.loginAs(COACH_EMAIL, PASSWORD).getMyCoachId();
+        int teamId = newTeam();
+        int coachTeamId = adminApi.assignCoachToTeam(coachId, teamId);
+
+        given()
+            .spec(adminSpec)
+            .body("""
+            {"coachId": %d, "teamId": %d, "role": "HEAD_COACH", "status": "INACTIVE",
+             "joinedAt": "%s", "leftAt": "%s"}
+            """.formatted(coachId, teamId, today(), today()))
+        .when()
+            .put(COACH_TEAM_BY_ID_ENDPOINT, coachTeamId)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200);
+
+        given()
+            .spec(adminSpec)
+            .queryParam("coachId", coachId)
+        .when()
+            .get(COACH_TEAMS_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body("find { it.id == %d }.status", withArgs(coachTeamId), equalTo("INACTIVE"))
+            .body("find { it.id == %d }.leftAt", withArgs(coachTeamId), equalTo(today()));
     }
 
 
