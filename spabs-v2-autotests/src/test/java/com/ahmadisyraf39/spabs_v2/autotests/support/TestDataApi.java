@@ -147,4 +147,15 @@ public class TestDataApi {
         """.formatted(activityId, playerId, status));
     }
 
+    public String getAttendanceStatus(int activityId, int playerId) {
+        return given()
+                    .spec(spec)
+                    .queryParam("activityId", activityId)
+                .when()
+                    .get("/attendances")
+                .then()
+                    .statusCode(200)
+                    .extract().path("find { it.playerId == " + playerId + " }.status");
+    }
+
 }
