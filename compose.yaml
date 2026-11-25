@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: spabs_v2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5433:5432"          # so that can still inspect it with pgAdmin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spabs_v2"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"      # accept any username/password
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"  # allow login without TLS (local testing only)
+    ports:
+      - "8025:8025"          # web inbox: http://localhost:8025
+
+  backend:
+    build: ./spabs-v2-backend
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      TZ: Asia/Kuala_Lumpur
+      DB_URL: jdbc:postgresql://db:5432/spabs_v2
+      DB_USERNAME: postgres
+      DB_PASSWORD: test
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: test
+      SPRING_MAIL_PASSWORD: test
+      APP_SEED_SAMPLEDATA_ENABLED: "true"
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./spabs-v2-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"            # same port as Vite dev, so tests and CORS need no change
