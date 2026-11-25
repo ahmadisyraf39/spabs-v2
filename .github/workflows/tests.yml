@@ -41,6 +41,6 @@ jobs:
           docker compose logs backend
           exit 1
 
-      - name: Run API tests
+      - name: Run API and UI tests
         working-directory: spabs-v2-autotests
-        run: mvn -B test -DexcludedGroups=known-bugs -Dtest='**/api/*Tests'
+        run: mvn -B test -DexcludedGroups=known-bugs
