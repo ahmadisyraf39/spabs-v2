@@ -44,3 +44,22 @@ jobs:
       - name: Run API and UI tests
         working-directory: spabs-v2-autotests
         run: mvn -B test -DexcludedGroups=known-bugs
+
+      - name: Save container logs
+        if: always()
+        run: docker compose logs > docker-logs.txt
+
+      - name: Upload test reports, screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            spabs-v2-autotests/target/surefire-reports/
+            spabs-v2-autotests/target/screenshots/
+            docker-logs.txt
+          if-no-files-found: ignore
+
+      - name: Stop the app
+        if: always()
+        run: docker compose down -v
