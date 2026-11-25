@@ -13,7 +13,7 @@ public class PlayersUiTests extends BaseUiTest {
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
 
-    private static final String TYPED_DATE_OF_BIRTH = "10052015";
+    private static final String DATE_OF_BIRTH = "2015-05-10";
 
     private PlayersListPage playersListPage;
     private PlayerFormPage playerFormPage;
@@ -75,7 +75,7 @@ public class PlayersUiTests extends BaseUiTest {
         playersListPage.clickNewPlayer();
         playerFormPage.waitUntilLoaded();
 
-        playerFormPage.createPlayer(name, TYPED_DATE_OF_BIRTH, "MALE");
+        playerFormPage.createPlayer(name, DATE_OF_BIRTH, "MALE");
 
         wait.until(ExpectedConditions.urlMatches(".*/players/\\d+/edit"));
     }
