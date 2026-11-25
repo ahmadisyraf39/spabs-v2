@@ -11,9 +11,9 @@ public class RecurringActivityUiTests extends BaseUiTest {
 
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
 
-    private static final String TYPED_START_TIME = "0500PM";      // 5:00 PM, 12-hour clock
-    private static final String TYPED_START_DATE = "04012027";    // Mon 4 Jan 2027 (day-month-year)
-    private static final String TYPED_END_DATE = "26012027";      // Tue 26 Jan 2027
+    private static final String START_TIME = "17:00";
+    private static final String START_DATE = "2027-01-04";    // Mon 4
+    private static final String END_DATE = "2027-01-26";      // Tue
 
     private TestDataApi adminApi;
     private RecurringActivityFormPage formPage;
@@ -37,8 +37,8 @@ public class RecurringActivityUiTests extends BaseUiTest {
         formPage.open();
         formPage.selectTeam(teamName);
         formPage.selectDayOfWeek("TUESDAY");
-        formPage.enterStartTime(TYPED_START_TIME);
-        formPage.enterDateRange(TYPED_START_DATE, TYPED_END_DATE);
+        formPage.enterStartTime(START_TIME);
+        formPage.enterDateRange(START_DATE, END_DATE);
         formPage.submit();
 
         // Tuesdays 5, 12, 19, 26 Jan 2027
@@ -48,8 +48,8 @@ public class RecurringActivityUiTests extends BaseUiTest {
     @Test
     public void recurringForm_withoutTeam_showsSelectTeamError() {
         formPage.open();
-        formPage.enterStartTime(TYPED_START_TIME);
-        formPage.enterDateRange(TYPED_START_DATE, TYPED_END_DATE);
+        formPage.enterStartTime(START_TIME);
+        formPage.enterDateRange(START_DATE, END_DATE);
         formPage.submit();
 
         Assert.assertEquals(formPage.getErrorMessage(),

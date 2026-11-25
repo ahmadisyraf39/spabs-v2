@@ -1,5 +1,6 @@
 package com.ahmadisyraf39.spabs_v2.autotests.api;
 
+import com.ahmadisyraf39.spabs_v2.autotests.config.TestConfig;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.JsonConfig;
@@ -17,7 +18,7 @@ public abstract class BaseApiTest {
 
     @BeforeClass
     public void configureRestAssured() {
-        RestAssured.baseURI = "http://localhost:8080/api/v1";
+        RestAssured.baseURI = TestConfig.API_BASE_URL;
 
         RestAssured.config = RestAssuredConfig.config().jsonConfig(
                 JsonConfig.jsonConfig().numberReturnType(JsonPathConfig.NumberReturnType.BIG_DECIMAL));

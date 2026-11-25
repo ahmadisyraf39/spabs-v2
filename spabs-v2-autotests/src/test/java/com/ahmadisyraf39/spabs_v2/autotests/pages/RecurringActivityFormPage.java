@@ -54,15 +54,14 @@ public class RecurringActivityFormPage {
         new Select(driver.findElement(daySelect)).selectByVisibleText(day);
     }
 
-    // Typed in the browser's locale format, e.g. "0500PM" for a 12-hour clock
-    public void enterStartTime(String typedTime) {
-        driver.findElement(startTimeInput).sendKeys(typedTime);
+    // Values in ISO format: time "17:00", dates "2027-01-04". Works in any browser locale
+    public void enterStartTime(String isoTime) {
+        InputHelper.setValue(driver, driver.findElement(startTimeInput), isoTime);
     }
 
-    // Typed in the browser's locale order, without separators
-    public void enterDateRange(String typedStartDate, String typedEndDate) {
-        driver.findElement(startDateInput).sendKeys(typedStartDate);
-        driver.findElement(endDateInput).sendKeys(typedEndDate);
+    public void enterDateRange(String isoStartDate, String isoEndDate) {
+        InputHelper.setValue(driver, driver.findElement(startDateInput), isoStartDate);
+        InputHelper.setValue(driver, driver.findElement(endDateInput), isoEndDate);
     }
 
     public void submit() {

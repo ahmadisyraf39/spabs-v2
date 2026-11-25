@@ -36,10 +36,9 @@ public class PlayerFormPage {
         driver.findElement(fullNameInput).sendKeys(fullName);
     }
 
-    // Type the date in the browser's locale order, without separators,
-    // e.g. "10052015" for 10 May 2015 in day-month-year locales.
-    public void enterDateOfBirth(String typedDate) {
-        driver.findElement(dateOfBirthInput).sendKeys(typedDate);
+    // ISO format, e.g. "2015-05-10". Works in any browser locale
+    public void enterDateOfBirth(String isoDate) {
+        InputHelper.setValue(driver, driver.findElement(dateOfBirthInput), isoDate);
     }
 
     public void selectGender(String gender) {
@@ -50,9 +49,9 @@ public class PlayerFormPage {
         driver.findElement(saveButton).click();
     }
 
-    public void createPlayer(String fullName, String typedDateOfBirth, String gender) {
+    public void createPlayer(String fullName, String isoDateOfBirth, String gender) {
         enterFullName(fullName);
-        enterDateOfBirth(typedDateOfBirth);
+        enterDateOfBirth(isoDateOfBirth);
         selectGender(gender);
         clickSave();
     }
