@@ -1,4 +1,5 @@
 # SPABS-V2
+![Automated tests](https://github.com/ahmadisyraf39/spabs-v2/actions/workflows/tests.yml/badge.svg)
 
 Sports academy player & business management system — tracks players, teams, coaches, parents,
 training/matches, attendance, skill progress, fees, inventory, sponsorships, and finances for a
