@@ -1,78 +1,152 @@
 # SPABS-V2 Automated Tests
 
-UI tests (Selenium) and API tests (REST Assured) for SPABS-V2, written in Java with TestNG.
+![Automated tests](https://github.com/ahmadisyraf39/spabs-v2/actions/workflows/tests.yml/badge.svg)
 
-The tests run against a real backend connected to a throwaway PostgreSQL database in Docker, so they never touch your development data.
+API tests (REST Assured) and UI tests (Selenium WebDriver) for SPABS-V2, written in Java 25 with TestNG.
+
+The tests run against the real app (backend, frontend and PostgreSQL) started with Docker Compose, on a fresh database seeded with sample data. The same setup runs in GitHub Actions on every pull request.
+
+## What is tested
+
+| Area | API tests | UI tests |
+|---|---|---|
+| Login and authentication | `AuthTests` | `LoginUiTests` |
+| Role-based access (admin, coach, parent) | `RoleAccessTests` | `RoleAccessUiTests` |
+| Data scoping (users only see their own teams and children) | `DataScopingTests` | |
+| Players: create, update, delete, validation | `PlayerTests` | `PlayersUiTests` |
+| Fees: assign, pay, double payment, team summary | `FeeTests` | `FeesUiTests` |
+| Recurring training sessions | `RecurringActivityTests` | `RecurringActivityUiTests` |
+| Attendance: record, duplicates, bulk, edit window, summary | `AttendanceTests` | `AttendanceUiTests` |
+| Membership history: end stint, move teams, jersey numbers | `MembershipHistoryTests` | `MembershipHistoryUiTests` |
 
 ## Prerequisites
 
-- Java 25
-- Maven (or use the backend's `./mvnw`)
 - Docker Desktop (running)
+- Java 25 and Maven
 - Google Chrome
-- Node.js (to run the frontend, for UI tests)
 
-You don't need to download ChromeDriver. Selenium Manager downloads the matching driver automatically on the first run.
+You don't need to download ChromeDriver. Selenium Manager downloads the matching driver automatically.
 
-## 1. Start the test database
+## 1. Start the app
 
-First time only, create the container:
-
-```bash
-docker run --name spabs-test-db -e POSTGRES_PASSWORD=test -e POSTGRES_DB=spabs_v2 -p 5433:5432 -d postgres:17
-```
-
-After that, start it with:
+From the repository root:
 
 ```bash
-docker start spabs-test-db
+docker compose up -d --build
 ```
 
-Check that it's running:
+Wait until the sample data is seeded:
 
 ```bash
-docker ps
+docker compose logs -f backend
 ```
 
-The test database uses port **5433**, so it doesn't clash with a local Postgres on 5432.
+Look for the line starting with **`Seeded sample data`**, then press `Ctrl+C` (the containers keep running).
 
-## 2. Start the backend against the test database
+> Wait for `Seeded sample data`, not for `Started ...Application`. The sample data seeder runs *after* Spring prints "Started", so tests started earlier can fail to log in.
 
-The backend must be started with these environment variables:
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| API | http://localhost:8080/api/v1 |
+| Mailpit (email inbox) | http://localhost:8025 |
+| PostgreSQL | `localhost:5433`, database `spabs_v2`, user `postgres`, password `test` |
 
-| Variable | Value | Why |
+## 2. Run the tests
+
+```bash
+cd spabs-v2-autotests
+mvn test -DexcludedGroups=known-bugs
+```
+
+Useful variations:
+
+```bash
+mvn test -Dtest=FeeTests                         # one class
+mvn test -Dtest='**/api/*Tests'                  # API tests only
+mvn test -DHEADLESS=true -DexcludedGroups=known-bugs   # no Chrome windows
+```
+
+From the repository root, add `-pl spabs-v2-autotests`. Without it, Maven also runs the backend's own unit tests.
+
+> Test classes must end in `Test` or `Tests` (e.g. `AuthTests`), otherwise `mvn test` skips them.
+
+## 3. Stop and reset
+
+```bash
+docker compose down -v
+```
+
+`-v` deletes the database, so the next `docker compose up` starts with a fresh, freshly seeded one.
+
+## Settings
+
+`TestConfig` reads these from a `-D` property or an environment variable, with local defaults:
+
+| Setting | Default | Purpose |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5433/spabs_v2` | Use the Docker test database |
-| `SPRING_DATASOURCE_PASSWORD` | `test` | Password of the test database |
-| `APP_SEED_SAMPLEDATA_ENABLED` | `true` | Create sample users, teams, players and fees (needed for UI tests) |
-| `MAIL_HOST` | `localhost` | Make welcome emails fail instantly instead of timing out |
-| `MAIL_PORT` | `1025` | (nothing listens here, which is intended) |
+| `BASE_URL` | `http://localhost:5173` | Frontend URL for UI tests |
+| `API_BASE_URL` | `http://localhost:8080/api/v1` | Backend URL for API tests |
+| `HEADLESS` | `false` | Run Chrome without a window (`true` in CI) |
 
-### Option A: IntelliJ
+## Test accounts
 
-Use the `SpabsV2Application (test DB)` run configuration, with these environment variables:
+Created by the backend's sample data seeder:
 
-```
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/spabs_v2;SPRING_DATASOURCE_PASSWORD=test;APP_SEED_SAMPLEDATA_ENABLED=true;MAIL_HOST=localhost;MAIL_PORT=1025
-```
+| Account | Password | Role |
+|---|---|---|
+| `admin.sample@spabs.example` | `Password123` | Admin, used by most API and UI tests |
+| `coach1@spabs.example` | `Password123` | Coach |
+| `parent1@spabs.example` | `Password123` | Parent |
 
-IntelliJ settings used in this project (**Settings → Build, Execution, Deployment → Build Tools → Maven → Runner**):
+Tests that need a special state (e.g. a user who must change their password) create their own users through the API, so they don't depend on shared accounts. The seeded super admin is not used by the tests.
 
-- **Delegate IDE build/run actions to Maven:** on (avoids MapStruct/Lombok annotation processing errors in IntelliJ's own builder)
-- **Skip Tests:** on (so running the backend doesn't first run the automated tests, which need the backend to be up)
+## Known bugs
 
-### Option B: Terminal
+Tests that document an unfixed bug are tagged `groups = "known-bugs"` and reference a GitHub Issue. CI excludes them with `-DexcludedGroups=known-bugs`, so a red build always means something *new* broke. When a bug is fixed, remove the tag so its test runs again.
 
-macOS / Linux:
+| Issue | Bug |
+|---|---|
+| #8 | `GET /users` and `GET /parents` return every user's contact details to any logged-in user |
+| #9 | A parent can read another child's profile and attendance |
+| #10 | A coach can read the roster of a team they don't coach (needs a product decision) |
+
+To run only these tests: `mvn test -Dgroups=known-bugs`
+
+## CI (GitHub Actions)
+
+`.github/workflows/tests.yml` runs on every pull request, every push to `main`, and manually from the Actions tab:
+
+1. Set up Java 25 (Maven dependencies cached)
+2. `docker compose up -d --build`
+3. Wait for `Seeded sample data` in the backend log
+4. `mvn test -DexcludedGroups=known-bugs` with `HEADLESS=true`
+5. Always, even when tests fail: upload the **`test-results`** artifact (surefire reports, failure screenshots, container logs), then stop the stack
+
+`main` is protected: changes go through a pull request, and the `api-and-ui-tests` check must pass before merging.
+
+**When a CI run fails:** download `test-results` from the run page. `surefire-reports/` has the errors, `screenshots/` shows the page at the moment a UI test failed, and `docker-logs.txt` has the backend logs.
+
+## Design decisions
+
+- **Page Object Model.** Page classes hold locators and actions; assertions stay in the tests.
+- **`data-testid` locators** added to the frontend, so tests don't break when text or styling changes.
+- **Explicit waits only**, never `Thread.sleep` and never implicit waits.
+- **A fresh browser per UI test** (`@BeforeMethod`) at a fixed 1366x768 window, so the sidebar is always visible.
+- **Test data created through the API** (`TestDataApi`) before UI tests, with unique names, so tests don't depend on each other or on existing data.
+- **Date and time inputs are set as ISO values** (`2027-01-04`, `17:00`) through `InputHelper`, not typed. Typing depends on the browser locale: CI's US-English Chrome reads `04012027` as 1 April, not 4 January.
+- **One timezone everywhere.** The backend uses `LocalDateTime`, so the backend container and the CI job both run on `Asia/Kuala_Lumpur`. Without it, the attendance window check saw a just-started activity as 7 hours in the future.
+- **Screenshots on failure**, saved by `BaseUiTest` to `target/screenshots/`.
+
+## Developing tests without the full Docker stack
+
+For backend debugging or hot reload, run only the database (and Mailpit) in Docker:
 
 ```bash
-cd spabs-v2-backend
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/spabs_v2 \
-SPRING_DATASOURCE_PASSWORD=test \
-APP_SEED_SAMPLEDATA_ENABLED=true \
-MAIL_HOST=localhost MAIL_PORT=1025 \
-./mvnw spring-boot:run
+docker compose up -d db mailpit
 ```
+
+Then start the backend from a terminal with the test database settings.
 
 Windows (PowerShell):
 
@@ -86,73 +160,25 @@ $env:MAIL_PORT="1025"
 ./mvnw spring-boot:run
 ```
 
-On first start against an empty database, the backend creates the tables, seeds the super admin, and (with sample data enabled) seeds sample accounts. Look for the log line starting with `Seeded sample data:`.
-
-> **Why `SPRING_DATASOURCE_*` and not `DB_URL` / `DB_PASSWORD`?**
-> `application-local.yaml` may set the datasource directly, which would override `DB_URL` / `DB_PASSWORD`. The `SPRING_DATASOURCE_*` variables take priority over all YAML files, so the backend always uses the test database.
-
-> **Why `SAMPLEDATA` with no underscore?** Spring maps the property `app.seed.sample-data.enabled` to an environment variable by removing the dash.
-
-### Test accounts
-
-| Account | Password | Notes |
-|---|---|---|
-| `superadmin@spabs.example` | `ChangeMe123!` | Must change password on first login, so the UI redirects to `/change-password` and most API endpoints return 403. Used only by the auth API tests |
-| `admin.sample@spabs.example` | `Password123` | Admin, lands on `/dashboard/admin`. Used by most API and UI tests |
-| `coach1@spabs.example` | `Password123` | Coach |
-| `parent1@spabs.example` | `Password123` | Parent (other parent emails are printed in the seeding log) |
-
-## 3. Start the frontend (UI tests only)
+macOS / Linux:
 
 ```bash
-cd spabs-v2-frontend
-npm install     # first time only
-npm run dev
+cd spabs-v2-backend
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/spabs_v2 \
+SPRING_DATASOURCE_PASSWORD=test \
+APP_SEED_SAMPLEDATA_ENABLED=true \
+MAIL_HOST=localhost MAIL_PORT=1025 \
+./mvnw spring-boot:run
 ```
 
-The frontend runs on `http://localhost:5173`. API tests don't need it.
+Check the startup log for `Database JDBC URL [jdbc:postgresql://localhost:5433/...]` to confirm it's using the test database. Then start the frontend with `npm run dev` in `spabs-v2-frontend`.
 
-## 4. Run the tests
+Notes:
 
-The backend (and, for UI tests, the frontend) must be running **before** you run the tests.
-
-From this folder:
-
-```bash
-cd spabs-v2-autotests
-mvn test
-```
-
-Or from the repository root, running only this module:
-
-```bash
-mvn test -pl spabs-v2-autotests
-```
-
-Running `mvn test` from the root without `-pl` also runs the backend's unit tests.
-
-> Test classes must end in `Test` or `Tests` (e.g. `AuthTests`), otherwise `mvn test` skips them.
-
-UI tests create players named `UI Test <timestamp>` in the test database. Reset the database whenever you want a clean start.
-
-## Resetting the test database
-
-To start again with an empty database:
-
-```bash
-docker rm -f spabs-test-db
-docker run --name spabs-test-db -e POSTGRES_PASSWORD=test -e POSTGRES_DB=spabs_v2 -p 5433:5432 -d postgres:17
-```
-
-Then restart the backend so it recreates the tables, the super admin and the sample data.
-
-To look inside the database:
-
-```bash
-docker exec -it spabs-test-db psql -U postgres -d spabs_v2
-```
-
-(`\dt` lists tables, `\q` exits.)
+- **`SPRING_DATASOURCE_*` instead of `DB_URL` / `DB_PASSWORD`:** `application-local.yaml` may set the datasource directly, and `SPRING_DATASOURCE_*` variables take priority over every YAML file.
+- **`SAMPLEDATA` has no underscore:** Spring maps `app.seed.sample-data.enabled` to an environment variable by removing the dash.
+- **Mail:** Mailpit's SMTP port isn't published to your PC, so welcome emails fail fast here. That's intended; the full Docker stack sends them to Mailpit.
+- **IntelliJ:** with *Delegate IDE build/run actions to Maven* on, the run configuration's environment variables are **not** passed to the backend, and it silently connects to your dev database. Use the terminal commands above.
 
 ## Project structure
 
@@ -161,39 +187,46 @@ spabs-v2-autotests/
 ├── pom.xml
 └── src/test/java/com/ahmadisyraf39/spabs_v2/autotests/
     ├── config/
-    │   └── TestConfig.java        # shared settings (frontend BASE_URL)
-    ├── api/
-    │   ├── BaseApiTest.java       # REST Assured base URI, login helpers
-    │   ├── AuthTests.java         # POST /auth/login, GET /auth/me
-    │   └── PlayerTests.java       # player CRUD, validation, auth
-    ├── ui/
-    │   ├── BaseUiTest.java        # fresh Chrome + wait per test
-    │   ├── LoginUiTests.java      # login form, redirect, error, forgot password link
-    │   └── PlayersUiTests.java    # create player, form validation, details page
+    │   └── TestConfig.java        # URLs and headless mode, from -D properties or env vars
+    ├── api/                       # REST Assured tests
+    │   ├── BaseApiTest.java       # base URI, JSON config, login and auth helpers
+    │   ├── AuthTests.java
+    │   ├── RoleAccessTests.java
+    │   ├── DataScopingTests.java
+    │   ├── PlayerTests.java
+    │   ├── FeeTests.java
+    │   ├── RecurringActivityTests.java
+    │   ├── AttendanceTests.java
+    │   └── MembershipHistoryTests.java
+    ├── ui/                        # Selenium tests
+    │   ├── BaseUiTest.java        # fresh Chrome per test, headless option, screenshots on failure
+    │   ├── LoginUiTests.java
+    │   ├── RoleAccessUiTests.java
+    │   ├── PlayersUiTests.java
+    │   ├── FeesUiTests.java
+    │   ├── RecurringActivityUiTests.java
+    │   ├── AttendanceUiTests.java
+    │   └── MembershipHistoryUiTests.java
     ├── pages/                     # Page Object Model: locators and actions, no asserts
-    │   ├── LoginPage.java
-    │   ├── ForgotPasswordPage.java
-    │   ├── PlayersListPage.java
-    │   ├── PlayerFormPage.java
-    │   └── PlayerDetailsPage.java
-    └── sanity/                    # setup checks: TestNG and Selenium are working
+    │   ├── InputHelper.java       # sets date/time inputs as ISO values (locale independent)
+    │   ├── Sidebar.java           # component object shared by all pages
+    │   └── ...Page.java
+    ├── support/
+    │   └── TestDataApi.java       # creates test data through the API for UI tests
+    └── sanity/
+        └── SanityTest.java        # checks that TestNG runs
 ```
-
-UI tests locate elements by `data-testid` attributes added to the frontend.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
 | `Cannot connect to the Docker daemon` | Start Docker Desktop |
-| `Connection refused` on port 5433 | Run `docker start spabs-test-db` |
-| `Connection refused` on port 8080 (in tests) | The backend isn't running. Start it first |
-| `container name is already in use` | Use `docker start` instead of `docker run`, or `docker rm -f spabs-test-db` first |
-| `password authentication failed` | Check `SPRING_DATASOURCE_PASSWORD=test` matches the container's `POSTGRES_PASSWORD` |
-| Backend still shows dev data | It was started without the test DB variables. Restart it with them |
-| Only the super admin exists | Sample data wasn't enabled. Check `APP_SEED_SAMPLEDATA_ENABLED=true` (no underscore in `SAMPLEDATA`) and that the database has no teams yet |
-| API tests get 403 on `/players` | They're using the super admin. Use `admin.sample@spabs.example` |
-| UI login lands on `/change-password` | Same cause: use the sample admin, not the super admin |
-| UI tests time out on `localhost:5173` | The frontend isn't running. Run `npm run dev` |
-| Date of birth fills in wrongly | Chrome expects the date in your locale's order. See `TYPED_DATE_OF_BIRTH` in `PlayersUiTests` |
-| Port 8080 already in use | Another backend instance is running. Stop it first |
+| `port is already allocated` (5433, 8080 or 5173) | Something else uses the port: an old container (`docker ps`), a backend in IntelliJ, or `npm run dev`. Stop it |
+| All tests fail with `Connection refused` | The stack isn't up yet. Check `docker compose ps` and wait for `Seeded sample data` |
+| The first logins fail, later tests pass | Tests started before seeding finished. Wait for `Seeded sample data` |
+| `SessionNotCreatedException: Chrome instance exited` in CI | Chrome was started without headless mode. Create browsers only through `BaseUiTest` |
+| Page refresh shows nginx `404 Not Found` | The frontend image was built without `nginx.conf`. Rebuild with `docker compose up -d --build frontend` |
+| CORS error in the browser console | Use `http://localhost:5173`, not `127.0.0.1:5173` |
+| A date or time is off by a day or several hours | A timezone mismatch. The backend container and the CI job must use `Asia/Kuala_Lumpur` |
+| Local backend shows dev data | It was started without the test database variables (see the IntelliJ note above) |
