@@ -8,7 +8,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
 
 public class PasswordResetTests extends BaseApiTest {
 
@@ -23,6 +26,7 @@ public class PasswordResetTests extends BaseApiTest {
     private static final String ADMIN_EMAIL = "admin.sample@spabs.example";
     private static final String ADMIN_PASSWORD = "Password123";
     private static final String OLD_PASSWORD = "OldPassword1";
+    private static final String NEW_PASSWORD = "NewPassword1";
 
     private TestDataApi adminApi;
 
@@ -60,6 +64,95 @@ public class PasswordResetTests extends BaseApiTest {
                 "No email should be sent to an address that has no account");
     }
 
+    // Reset password
+
+    // Invalid token returns 400
+    @Test
+    public void resetPassword_invalidToken_returns400() {
+        given()
+            .contentType(ContentType.JSON)
+            .body(resetBody("not-a-real-token", NEW_PASSWORD))
+        .when()
+            .post(RESET_PASSWORD_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo(INVALID_TOKEN_MESSAGE));
+    }
+
+    // Full flow: forgot → token from the email → reset → only the new password works
+    @Test
+    public void resetPassword_withEmailedToken_replacesThePassword() {
+        String email = newUser();
+        String token = requestResetAndGetToken(email);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(resetBody(token, NEW_PASSWORD))
+        .when()
+            .post(RESET_PASSWORD_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(204);
+
+        String newToken = loginAndGetToken(email, NEW_PASSWORD);
+        assertLoginFails(email, OLD_PASSWORD);
+
+        // A reset also clears the "must change password" flag
+        given()
+            .spec(authSpec(newToken))
+        .when()
+            .get(ME_ENDPOINT)
+        .then()
+            .statusCode(200)
+            .body("mustChangePassword", equalTo(false));
+    }
+
+    @Test
+    public void resetToken_canOnlyBeUsedOnce() {
+        String email = newUser();
+        String token = requestResetAndGetToken(email);
+
+        resetPassword(token, NEW_PASSWORD, 204);
+        resetPassword(token, "AnotherPassword1", 400);
+    }
+
+    // Change password
+
+    // Wrong current password returns 400
+    @Test
+    public void changePassword_wrongCurrentPassword_returns400() {
+        String email = newUser();
+
+        given()
+            .spec(authSpec(loginAndGetToken(email, OLD_PASSWORD)))
+            .body(changeBody("WrongPassword1", NEW_PASSWORD))
+        .when()
+            .put(CHANGE_PASSWORD_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body("message", equalTo("Current password is incorrect"));
+    }
+
+    // Change password, then the new password works and the old one doesn't
+    @Test
+    public void changePassword_thenLoginWithNewPassword_works() {
+        String email = newUser();
+
+        given()
+            .spec(authSpec(loginAndGetToken(email, OLD_PASSWORD)))
+            .body(changeBody(OLD_PASSWORD, NEW_PASSWORD))
+        .when()
+            .put(CHANGE_PASSWORD_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(204);
+
+        loginAndGetToken(email, NEW_PASSWORD);
+        assertLoginFails(email, OLD_PASSWORD);
+    }
+
     // Helpers
     private String newUser() {
         String email = "reset" + System.nanoTime() + "@spabs.example";
@@ -80,10 +173,43 @@ public class PasswordResetTests extends BaseApiTest {
                 .statusCode(204);
     }
 
+    private String requestResetAndGetToken(String email) {
+        requestReset(email);
+        return MailpitApi.extractResetToken(MailpitApi.waitForEmail(email, RESET_EMAIL_SUBJECT));
+    }
+
+    private void resetPassword(String token, String newPassword, int expectedStatus) {
+        given()
+                .contentType(ContentType.JSON)
+                .body(resetBody(token, newPassword))
+                .when()
+                .post(RESET_PASSWORD_ENDPOINT)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(expectedStatus);
+    }
+
+    private void assertLoginFails(String email, String password) {
+        given()
+                .contentType(ContentType.JSON)
+                .body(loginBody(email, password))
+                .when()
+                .post(LOGIN_ENDPOINT)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(401);
+    }
+
     private String resetBody(String token, String newPassword) {
         return """
             {"token": "%s", "newPassword": "%s"}
             """.formatted(token, newPassword);
+    }
+
+    private String changeBody(String currentPassword, String newPassword) {
+        return """
+            {"currentPassword": "%s", "newPassword": "%s"}
+            """.formatted(currentPassword, newPassword);
     }
 
 }
