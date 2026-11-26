@@ -117,6 +117,21 @@ public class PasswordResetTests extends BaseApiTest {
         resetPassword(token, "AnotherPassword1", 400);
     }
 
+    // Known bug: a second reset request fails with 401 (see issue #18). Remove the group once fixed.
+    @Test(groups = "known-bugs")
+    public void newResetRequest_invalidatesTheEarlierToken() {
+        String email = newUser();
+        requestReset(email);
+        requestReset(email);
+
+        List<String> emails = MailpitApi.waitForEmails(email, RESET_EMAIL_SUBJECT, 2);
+        String newestToken = MailpitApi.extractResetToken(emails.get(0));
+        String earlierToken = MailpitApi.extractResetToken(emails.get(1));
+
+        resetPassword(earlierToken, NEW_PASSWORD, 400);
+        resetPassword(newestToken, NEW_PASSWORD, 204);
+    }
+
     // Change password
 
     // Wrong current password returns 400
@@ -151,6 +166,21 @@ public class PasswordResetTests extends BaseApiTest {
 
         loginAndGetToken(email, NEW_PASSWORD);
         assertLoginFails(email, OLD_PASSWORD);
+    }
+
+    // Known bug: change-password accepts short passwords (see issue #19). Remove the group once fixed.
+    @Test(groups = "known-bugs")
+    public void changePassword_tooShortNewPassword_returns400() {
+        String email = newUser();
+
+        given()
+            .spec(authSpec(loginAndGetToken(email, OLD_PASSWORD)))
+            .body(changeBody(OLD_PASSWORD, "abc"))
+        .when()
+            .put(CHANGE_PASSWORD_ENDPOINT)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(400);
     }
 
     // Helpers
