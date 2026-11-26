@@ -48,10 +48,16 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             required
+            data-testid="forgot-email"
           />
         </label>
 
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={submitting}
+          data-testid="forgot-submit"
+        >
           {submitting ? <span className="loading loading-spinner loading-sm" /> : 'Send reset link'}
         </button>
 

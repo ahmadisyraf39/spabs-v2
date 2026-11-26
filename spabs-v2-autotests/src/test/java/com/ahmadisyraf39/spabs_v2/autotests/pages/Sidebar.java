@@ -14,6 +14,8 @@ public class Sidebar {
     private final WebDriverWait wait;
 
     private final By navLinks = By.cssSelector("[data-testid='sidebar-nav'] a");
+    private final By logoutButton = By.cssSelector("[data-testid='sidebar-logout']");
+    private final By confirmButton = By.cssSelector("[data-testid='confirm-modal-confirm']");
 
     public Sidebar(WebDriver driver, WebDriverWait wait) {
         this.driver = driver;
@@ -25,5 +27,11 @@ public class Sidebar {
         return driver.findElements(navLinks).stream()
                 .map(link -> link.getDomAttribute("href"))
                 .toList();
+    }
+
+    // Clicks "Log out" and confirms the dialog
+    public void logout() {
+        wait.until(ExpectedConditions.elementToBeClickable(logoutButton)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(confirmButton)).click();
     }
 }

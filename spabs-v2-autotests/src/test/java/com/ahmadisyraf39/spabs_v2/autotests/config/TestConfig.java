@@ -5,6 +5,7 @@ public final class TestConfig {
     public static final String BASE_URL = "http://localhost:5173";
     public static final String API_BASE_URL = "http://localhost:8080/api/v1";
     public static final boolean HEADLESS = Boolean.parseBoolean(setting("HEADLESS", "false"));
+    public static final String MAILPIT_URL = setting("MAILPIT_URL", "http://localhost:8025");
 
     private TestConfig() {}
 

@@ -28,14 +28,12 @@ public class LoginPage {
         wait.until(ExpectedConditions.visibilityOfElementLocated(emailInput));
     }
 
-    public void enterEmail(String email){
-        WebElement emailElement = driver.findElement(emailInput);
-        emailElement.sendKeys(email);
+    public void enterEmail(String email) {
+        InputHelper.typeText(wait, emailInput, email);
     }
 
-    public void enterPassword(String password){
-        WebElement passwordElement = driver.findElement(passwordInput);
-        passwordElement.sendKeys(password);
+    public void enterPassword(String password) {
+        InputHelper.typeText(wait, passwordInput, password);
     }
 
     public void clickLogin() {

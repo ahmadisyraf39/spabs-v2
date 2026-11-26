@@ -1,8 +1,7 @@
 package com.ahmadisyraf39.spabs_v2.autotests.pages;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public final class InputHelper {
 
@@ -19,5 +18,21 @@ public final class InputHelper {
                         + "setter.call(arguments[0], arguments[1]);"
                         + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
                 input, isoValue);
+    }
+
+    /**
+     * Types text into an input and checks the result. If characters got lost
+     * (e.g. React re-rendered mid-typing), clears the field and types again,
+     * until the value matches or the wait times out.
+     */
+    public static void typeText(WebDriverWait wait, By locator, String text) {
+        wait.ignoring(StaleElementReferenceException.class).until(d -> {
+            WebElement input = d.findElement(locator);
+            if (!text.equals(input.getDomProperty("value"))) {
+                input.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
+                input.sendKeys(text);
+            }
+            return text.equals(input.getDomProperty("value"));
+        });
     }
 }
