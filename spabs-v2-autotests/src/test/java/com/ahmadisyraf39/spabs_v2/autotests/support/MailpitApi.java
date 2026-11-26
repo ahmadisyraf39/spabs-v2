@@ -21,6 +21,7 @@ public final class MailpitApi {
     private static final long TIMEOUT_MS = 10_000;
     private static final long POLL_INTERVAL_MS = 500;
     private static final Pattern RESET_TOKEN = Pattern.compile("reset-password\\?token=([A-Za-z0-9_-]+)");
+    private static final Pattern RESET_LINK = Pattern.compile("(https?://\\S+/reset-password\\?token=[A-Za-z0-9_-]+)");
 
     private MailpitApi() {}
 
@@ -56,6 +57,14 @@ public final class MailpitApi {
 
     public static String extractResetToken(String emailText) {
         Matcher matcher = RESET_TOKEN.matcher(emailText);
+        if (!matcher.find()) {
+            throw new AssertionError("No reset link found in email:\n" + emailText);
+        }
+        return matcher.group(1);
+    }
+
+    public static String extractResetLink(String emailText) {
+        Matcher matcher = RESET_LINK.matcher(emailText);
         if (!matcher.find()) {
             throw new AssertionError("No reset link found in email:\n" + emailText);
         }
