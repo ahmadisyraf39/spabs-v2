@@ -53,6 +53,7 @@ export default function Sidebar({ navItems }) {
           <button
             type="button"
             onClick={() => setConfirmingLogout(true)}
+            data-testid="sidebar-logout"
             className="hover:bg-secondary flex w-full items-center gap-3 rounded px-2 py-2 text-sm transition-colors"
           >
             <svg

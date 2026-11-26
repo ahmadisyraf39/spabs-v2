@@ -46,7 +46,7 @@ export default function ChangePasswordPage() {
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error text-sm" data-testid="change-error">
             <span>{error}</span>
           </div>
         )}
@@ -57,6 +57,7 @@ export default function ChangePasswordPage() {
           onChange={(e) => setCurrentPassword(e.target.value)}
           autoComplete="current-password"
           required
+          testId="change-current-password"
         />
 
         <PasswordInput
@@ -66,9 +67,15 @@ export default function ChangePasswordPage() {
           autoComplete="new-password"
           minLength={8}
           required
+          testId="change-new-password"
         />
 
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={submitting}
+          data-testid="change-submit"
+        >
           {submitting ? <span className="loading loading-spinner loading-sm" /> : 'Change password'}
         </button>
       </form>

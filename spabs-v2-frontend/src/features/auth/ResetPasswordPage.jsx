@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
     <AuthLayout title="Reset password" subtitle="Choose a new password for your account.">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error text-sm" data-testid="reset-error">
             <span>{error}</span>
           </div>
         )}
@@ -74,9 +74,15 @@ export default function ResetPasswordPage() {
           autoComplete="new-password"
           minLength={8}
           required
+          testId="reset-new-password"
         />
 
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={submitting}
+          data-testid="reset-submit"
+        >
           {submitting ? <span className="loading loading-spinner loading-sm" /> : 'Reset password'}
         </button>
       </form>
