@@ -14,9 +14,11 @@ authentication via Spring Security, and a React (Vite) frontend with a fetch-bas
 
 Redesigned the relational schema with Spring Data JPA/Hibernate to support multi-team history for
 players and coaches (replacing SPABS's single-team model, where each player/coach row carried one
-static `kategori` column with no history) and active/inactive membership status in place of hard
-deletes (SPABS issued a plain SQL `DELETE` on removal). Data access throughout uses Spring Data
-JPA repository interfaces with derived query methods rather than hand-written SQL.
+static `kategori` column with no history). Leaving a team now marks the membership `INACTIVE`
+with a leave date, so the history is kept (SPABS issued a plain SQL `DELETE` on removal); a
+separate, clearly warned permanent remove still exists for entries added by mistake. Data access
+throughout uses Spring Data JPA repository interfaces with derived query methods rather than
+hand-written SQL.
 
 ### What's new
 
